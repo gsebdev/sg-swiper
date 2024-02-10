@@ -1,0 +1,26 @@
+{
+  "name": "sg-swiper",
+  "version": "1.0.0",
+  "description": "a lightweighttypescript responsive slides swiper",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gsebdev/sg-swiper.git"
+  },
+  "keywords": [
+    "swiper",
+    "slider",
+    "lightweight",
+    "fast",
+    "typescript"
+  ],
+  "author": "Sebastien GAULT",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gsebdev/sg-swiper/issues"
+  },
+  "homepage": "https://github.com/gsebdev/sg-swiper#readme"
+}
