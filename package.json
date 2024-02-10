@@ -2,9 +2,17 @@
   "name": "sg-swiper",
   "version": "1.0.0",
   "description": "a lightweighttypescript responsive slides swiper",
-  "main": "index.js",
+  "main": "./dist/sg-swiper.js",
+  "module": "./dist/sg-swiper.mjs",
+  "types": "./dist/sg-swiper.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "webpack --watch --mode development",
+    "build-demo": "webpack --mode production",
+    "build": "tsup"
   },
   "repository": {
     "type": "git",
@@ -22,5 +30,15 @@
   "bugs": {
     "url": "https://github.com/gsebdev/sg-swiper/issues"
   },
-  "homepage": "https://github.com/gsebdev/sg-swiper#readme"
+  "homepage": "https://github.com/gsebdev/sg-swiper#readme",
+  "devDependencies": {
+    "@babel/core": "^7.23.9",
+    "@babel/preset-env": "^7.23.9",
+    "@babel/preset-typescript": "^7.23.3",
+    "babel-loader": "^9.1.3",
+    "tsup": "^8.0.2",
+    "typescript": "^5.3.3",
+    "webpack": "^5.90.1",
+    "webpack-cli": "^5.1.4"
+  }
 }
