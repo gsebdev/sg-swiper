@@ -530,11 +530,13 @@ export default class Swiper implements SwiperInterface {
    * @return {number} the index of the slide
    */
   private _getIndexByPosition(translate: number) {
-    return this._slides.findIndex(
-      (slide) =>
-        slide.position + slide.width / 2 > translate &&
-        translate > slide.position - slide.width / 2
-    );
+      const offset = -1 * this._state.swiperWidth / 2;
+      const ii = this._slides.findIndex(
+        slide => offset + slide.position <= translate && offset + slide.position + slide.width >= translate
+      )
+      console.log(ii, translate)
+
+    return this._slides.findIndex(slide => offset + slide.position <= translate && offset + slide.position + slide.width >= translate);
   }
 
   /**

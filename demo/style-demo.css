@@ -3,7 +3,19 @@
     height: 500px;
     max-width: 1024px;
     overflow: hidden;
+    padding: 20px 0;
+    position: relative;
+    cursor: grab;
 
+}
+.swiper-demo::before {
+    content: '';
+    position: absolute;
+    width: 2px; background-color: red;
+    height: 100%; 
+    left: 50%; 
+    top: 0;
+    transform: translateX(-50%);
 }
 .swiper-wrapper {
     display: flex;
@@ -12,7 +24,20 @@
     column-gap: 10px;
 }
 .swiper-slide {
-    flex: 0 0 50%;
+    position: relative;
+    flex: 0 0 30%;
     height: 100%;
-    background-color: blueviolet;
+    background-color: rgb(194, 255, 211);
+}
+.swiper-slide.is-active {
+    background-color: aqua;
+}
+.swiper-slide::before {
+    content: '';
+    position: absolute;
+    width: 2px; background-color: violet;
+    height: 100%; 
+    left: 50%; 
+    top: 0;
+    transform: translateX(-50%);
 }
