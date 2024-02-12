@@ -1,6 +1,8 @@
 # sg-swiper
 a lightweight typescript slides swiper.
 
+[Demo here](https://gsebdev.github.io/sg-swiper/)
+
 ## Installation
 
 ```bash
