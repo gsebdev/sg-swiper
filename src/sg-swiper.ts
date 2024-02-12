@@ -8,14 +8,14 @@ import {
 import { SwiperArgs } from "./interfaces/SwiperArgs";
 
 export default class Swiper implements SwiperInterface {
-  private _state: SwiperState = {
+  _state: SwiperState = {
     currentIndex: 0,
     currentPosition: 0,
     initialized: false,
     swiperWidth: 0,
     slidesLoaded: true,
   };
-  private _swipeSession: SwipeSession = {
+  _swipeSession: SwipeSession = {
     active: false,
     type: "mouse",
     startX: 0,
@@ -29,42 +29,32 @@ export default class Swiper implements SwiperInterface {
     direction: 0,
   };
 
-  private _indexChangeCallback: ((index: number) => void) | null = null;
+  _indexChangeCallback: ((index: number) => void) | null = null;
 
-  private _navigationElements: NavigationElements = {};
+  _navigationElements: NavigationElements = {};
 
-  private _childrenSwipers: SwiperInterface[] | null = null;
-  private _slideClassName: string | null = null;
-  private _swiperElement: HTMLElement | null = null;
-  private _slidesWrapper: HTMLElement | null;
-  private _breakpoint: number | null = null;
-  private _auto: number | null = null;
-  private _autoInterval: NodeJS.Timeout | undefined;
-  private _slides: SwiperSlide[] = [];
-  private _slideCount: number = 0;
-  private _draggable: boolean = false;
-  private _slideLoad: ((slide: HTMLElement) => Promise<void>) | null = null;
-  private _slideClick: ((index: number, element: HTMLElement) => void) | null =
+  _childrenSwipers: SwiperInterface[] | null = null;
+  _slideClassName: string | null = null;
+  _swiperElement: HTMLElement | null = null;
+  _slidesWrapper: HTMLElement | null;
+  _auto: number | null = null;
+  _autoInterval: NodeJS.Timeout | undefined;
+  _slides: SwiperSlide[] = [];
+  _slideCount: number = 0;
+  _draggable: boolean = false;
+  _slideLoad: ((slide: HTMLElement) => Promise<void>) | null = null;
+  _slideClick: ((index: number, element: HTMLElement) => void) | null =
     null;
-  private _eventListeners: [
+  _eventListeners: [
     HTMLElement | null | Window,
     string,
-    (e: Event) => void
+    (e: Event) => void,
+    {capture?: boolean, passive?: boolean}?
   ][];
-  private _activeSessionEventListeners: {
+  _activeSessionEventListeners: {
     mouse: [keyof DocumentEventMap, (e: MouseEvent | TouchEvent) => void][];
     touch: [keyof DocumentEventMap, (e: MouseEvent | TouchEvent) => void][];
-  } = {
-      mouse: [
-        ["mousemove", this._handleMove.bind(this)],
-        ["mouseup", this._handleRelease.bind(this)],
-      ],
-      touch: [
-        ["touchmove", this._handleMove.bind(this)],
-        ["touchend", this._handleRelease.bind(this)],
-        ["touchcancel", this._handleRelease.bind(this)],
-      ],
-    };
+  };
 
   /**
   * Constructor for the Swiper class.
@@ -87,7 +77,6 @@ export default class Swiper implements SwiperInterface {
       this._slideClassName = args.slideClassName ?? null;
       this._navigationElements = args.navigation ?? {};
       this._childrenSwipers = args.linkedSwipers ?? null;
-      this._breakpoint = args.breakpoint ?? null;
       this._slideLoad = args.slideLoad ?? null;
       this._slideClick = args.onSlideClick ?? null;
       this._state.slidesLoaded = args.slideLoad ? false : true;
@@ -97,7 +86,7 @@ export default class Swiper implements SwiperInterface {
     // create the list of slides
     const slideCollection = this._slideClassName
       ? this._swiperElement.querySelectorAll("." + this._slideClassName)
-      : this._swiperElement.children;
+      : this._swiperElement.firstElementChild?.children ?? [];
     if (slideCollection.length === 0) {
       console.error("Cannot initialize Swiper: no slides found.");
       return;
@@ -123,26 +112,40 @@ export default class Swiper implements SwiperInterface {
           element: slide,
           position: 0,
           width: 0,
-          loaded: this._slideLoad && slide.dataset.loaded === "false" ? false : true,
+          loaded: this._slideLoad ? false : true,
         };
       }
     );
-
     //set the number of slides
     this._slideCount = this._slides.length;
-
+    
+    // set the eventListeners when a swiper session is activated
+    this._activeSessionEventListeners = {
+      mouse: [
+        ["mousemove", this._handleMove],
+        ["mouseup", this._handleRelease],
+      ],
+      touch: [
+        ["touchmove", this._handleMove],
+        ["touchend", this._handleRelease],
+        ["touchcancel", this._handleRelease],
+      ],
+    };
     // add the event listeners
     this._eventListeners = [
-      [this._swiperElement, "mouseover", this._handleHover.bind(this)],
+      [this._swiperElement, "mouseover", this._handleHover.bind(this), {passive: true}],
       //[this._swiperElement, 'mouseleave', this._handleLeave.bind(this)],
-      [window, "resize", this._getDimensions.bind(this)],
+      [window, "resize", this._getDimensions, {passive: true}],
     ];
 
     // add the draggable event listeners
     if (this._draggable) {
       this._eventListeners.push(
-        [this._swiperElement, "mousedown", this._handlePush.bind(this)],
-        [this._swiperElement, "touchstart", this._handlePush.bind(this)]
+        //@ts-ignore
+        [this._swiperElement, "mousedown", this._handlePush, {passive: true}],
+        [this._swiperElement, "touchstart", this._handlePush, {passive: true}],
+        [this._swiperElement, "selectstart", this._preventDefault, {capture: true}],
+        [this._swiperElement, "dragstart", this._preventDefault, {capture: true}]
       );
     }
 
@@ -155,18 +158,16 @@ export default class Swiper implements SwiperInterface {
    *
    * @param {number} index - The index at which to start the slider
    */
-  public start(index?: number) {
+  start = (index?: number) => {
     if (
       !this._state.initialized &&
-      this._swiperElement &&
-      (!this._breakpoint || window.innerWidth < this._breakpoint)
-    ) {
+      this._swiperElement) {
       // get the dimensions of elements to calculate properly the translations values 
       this._getDimensions();
 
       // add the event listeners
-      this._eventListeners.forEach(([element, event, callback]) => {
-        element?.addEventListener(event, callback, { passive: true });
+      this._eventListeners.forEach(([element, event, callback, options]) => {
+        element?.addEventListener(event, callback, options);
       });
 
       // add the slide click event listeners to each slides
@@ -206,13 +207,16 @@ export default class Swiper implements SwiperInterface {
   }
 
   /**
-   * A private function to handle hover behavior.
+   * A function to handle hover behavior.
    */
-  private _handleHover() {
+  _handleHover = () => {
     clearInterval(this._autoInterval);
   }
+  _preventDefault = (e: Event) => {
+    e.preventDefault();
+  } 
   /*
-  private _handleLeave() {
+  _handleLeave() {
         if(this._auto) {
                 this._autoInterval = setInterval(() => {
                     if(this._slides[this._state.currentIndex].loaded) {
@@ -225,7 +229,7 @@ export default class Swiper implements SwiperInterface {
   /**
   * Handles the click event for the previous button.
   */
-  private _handlePrevClick() {
+  _handlePrevClick = () => {
     const newIndex =
       this._state.currentIndex - 1 < 0
         ? this._slideCount - 1
@@ -235,7 +239,7 @@ export default class Swiper implements SwiperInterface {
   /**
    * Handles the click event for navigating to the next item.
    */
-  private _handleNextClick() {
+  _handleNextClick = () => {
     const newIndex =
       this._state.currentIndex + 1 > this._slideCount - 1
         ? 0
@@ -250,7 +254,7 @@ export default class Swiper implements SwiperInterface {
    * @param {HTMLElement} element - the slide element
    * @param {number} index - the index of the slide
    */
-  private _handleSlideClick(e: Event, element: HTMLElement, index: number) {
+  _handleSlideClick = (e: Event, element: HTMLElement, index: number) => {
     e.preventDefault();
     if ((this._swipeSession.isClick || !this._draggable) && this._slideClick) {
       this._slideClick(index, element);
@@ -260,7 +264,7 @@ export default class Swiper implements SwiperInterface {
   /**
    * Update dimensions and positions of slides
    */
-  private _getDimensions() {
+  _getDimensions = () => {
     // Update swiper width
     this._state.swiperWidth = this._swiperElement?.offsetWidth ?? 0;
 
@@ -283,11 +287,11 @@ export default class Swiper implements SwiperInterface {
   /**
    * Stops all event listeners and resets the state of the component.
    */
-  public stop() {
+  stop = () => {
 
     // Remove all event listeners
-    this._eventListeners.forEach(([element, event, callback]) => {
-      element?.removeEventListener(event, callback);
+    this._eventListeners.forEach(([element, event, callback, options]) => {
+      element?.removeEventListener(event, callback, options);
     });
 
     // Remove slides click event listeners
@@ -318,7 +322,7 @@ export default class Swiper implements SwiperInterface {
    * @param {number} value - The value to translate by
    * @param {number | null} duration - The duration of the translation, defaults to null
    */
-  private _translate(value: number, duration: number | null = null) {
+  _translate = (value: number, duration: number | null = null) => {
     if (this._slidesWrapper) {
       this._slidesWrapper.style.transform = `translate3d(${value}px, 0, 0)`;
       if (duration)
@@ -331,22 +335,17 @@ export default class Swiper implements SwiperInterface {
   /**
    * Handles the push event triggered by a mouse click or touch on the swiper element.
    *
-   * @param {MouseEvent | TouchEvent} e - The event object.
-   * @return {void} 
    */
-  private _handlePush(e: MouseEvent | TouchEvent) {
+  _handlePush = (e: MouseEvent | TouchEvent): void => {
     // get focus and remose text selection in window when starting to interact with the swiper
     this._swiperElement?.focus();
     window.getSelection()?.removeAllRanges();
-
+    const clientX = (e as MouseEvent).clientX ?? (e as TouchEvent).touches[0]?.clientX ?? null
     // start a new swipe session
     this._swipeSession = {
       active: true,
       type: e.type === "mousedown" ? "mouse" : "touch",
-      startX:
-        e.type === "mousedown"
-          ? (e as MouseEvent).clientX
-          : (e as TouchEvent).touches[0].clientX,
+      startX: clientX,
       startTime: e.timeStamp,
       velocity: 0,
       isClick: false,
@@ -356,7 +355,6 @@ export default class Swiper implements SwiperInterface {
       lastEventVelocity: 0,
       direction: 0,
     };
-
     // add event listeners for the current swipe session (move and release)
     this._activeSessionEventListeners[this._swipeSession.type].forEach(
       ([event, callback]) => {
@@ -371,7 +369,8 @@ export default class Swiper implements SwiperInterface {
    * Handles the release action triggered by a mouse up or touch end.
    *
    */
-  private _handleRelease() {
+  _handleRelease = () => {
+    
     // stop the current swipe session
     this._swipeSession.active = false;
 
@@ -397,9 +396,9 @@ export default class Swiper implements SwiperInterface {
   /**
    * Do an action based on the given event type.
    *
-   * @param {("release" | "push" | "move")} ev - The type of event to trigger
+   * @param {("release" | "push" | "move")} ev - The type of event
    */
-  private _triggerEvent(ev: "release" | "push" | "move") {
+  _triggerEvent = (ev: "release" | "push" | "move") => {
     if (ev === "release") {
       this._setIndex(this._state.currentIndex);
       /*
@@ -429,11 +428,8 @@ export default class Swiper implements SwiperInterface {
 
   /**
    * Handle the move event, updating swipe session data and triggering move to do related actions.
-   *
-   * @param {MouseEvent | TouchEvent} e - The mouse or touch event
-   * @return {void} 
    */
-  private _handleMove(e: MouseEvent | TouchEvent) {
+  _handleMove = (e: MouseEvent | TouchEvent): void => {
     if (!this._swipeSession.active) return;
     const { type, startX, lastEvent } = this._swipeSession;
 
@@ -466,21 +462,35 @@ export default class Swiper implements SwiperInterface {
    * @param {number} index - The index to set.
    * @param {boolean} translate - Optional flag to perform translation. Defaults to true.
    */
-  private _setIndex(index: number, translate: boolean = true) {
+  _setIndex = (index: number, translate: boolean = true): void => {
 
     //Slides need to be lazy loaded
     if (!this._state.slidesLoaded && this._slideLoad) {
+      const numOfAdjacentSlidesVisible = Math.ceil(((this._state.swiperWidth / this._slides[index].width) - 1) / 2);
       this._slideLoad(this._slides[index]?.element)
         .then(() => {
           this._slides[index].loaded = true;
           this._checkIfAllLoaded();
-          if (!this._state.slidesLoaded && this._slides[index + 1])
-            (this._slideLoad as any)(this._slides[index + 1].element).then(
-              () => {
-                this._slides[index + 1].loaded = true;
-                this._checkIfAllLoaded();
+          
+          // load adjacent visible slides
+          if (!this._state.slidesLoaded) {
+            for(let i = 1; i <= numOfAdjacentSlidesVisible; i++) {
+              if(this._slides[index + i]) {
+                (this._slideLoad as any)(this._slides[index + i].element)
+                  .then(() => {
+                    this._slides[index + i].loaded = true;
+                    this._checkIfAllLoaded();
+                  })
               }
-            );
+              if(this._slides[index - i]) {
+                (this._slideLoad as any)(this._slides[index - i].element)
+                  .then(() => {
+                    this._slides[index - i].loaded = true;
+                    this._checkIfAllLoaded();
+                  })
+              }
+            }
+          }
         })
         .catch((err) => {
           console.error(err);
@@ -525,16 +535,12 @@ export default class Swiper implements SwiperInterface {
 
   /**
    * Retrieves the active index based on the given position.
-   *
-   * @param {number} translate - the position to search for
-   * @return {number} the index of the slide
    */
-  private _getIndexByPosition(translate: number) {
-      const offset = -1 * this._state.swiperWidth / 2;
-      const ii = this._slides.findIndex(
-        slide => offset + slide.position <= translate && offset + slide.position + slide.width >= translate
-      )
-      console.log(ii, translate)
+  _getIndexByPosition = (translate: number): number => {
+    const offset = -1 * this._state.swiperWidth / 2;
+    const ii = this._slides.findIndex(
+      slide => offset + slide.position <= translate && offset + slide.position + slide.width >= translate
+    )
 
     return this._slides.findIndex(slide => offset + slide.position <= translate && offset + slide.position + slide.width >= translate);
   }
@@ -542,7 +548,7 @@ export default class Swiper implements SwiperInterface {
   /**
    * Check if all slides are loaded.
    */
-  private _checkIfAllLoaded() {
+  _checkIfAllLoaded = (): void => {
     this._state.slidesLoaded = this._slides.every((slide) => slide.loaded);
   }
 
@@ -556,9 +562,6 @@ export default class Swiper implements SwiperInterface {
 
   /**
    * setter for slide click callback
-   *
-   * @param {function} callback - callback function to be invoked on slide click
-   * @return {void} 
    */
   set slideClick(callback: (index: number, element: HTMLElement) => void) {
     this._slideClick = callback;

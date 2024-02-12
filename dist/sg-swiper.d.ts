@@ -1,3 +1,32 @@
+interface SwipeSession {
+    active: boolean;
+    type: "mouse" | "touch";
+    startX: number;
+    startTime: number;
+    velocity: number;
+    isClick: boolean;
+    deltaX: number;
+    lastEvent: Event | null;
+    lastEventDeltaX: number;
+    lastEventVelocity: number;
+    direction: -1 | 1 | 0;
+}
+
+interface SwiperState {
+    currentIndex: number;
+    currentPosition: number;
+    initialized: boolean;
+    swiperWidth: number;
+    slidesLoaded: boolean;
+}
+
+interface SwiperSlide {
+    element: HTMLElement;
+    id: string;
+    position: number;
+    width: number;
+    loaded: boolean;
+}
 interface NavigationElements {
     next?: HTMLElement[] | null;
     prev?: HTMLElement[] | null;
@@ -17,30 +46,39 @@ interface SwiperArgs {
     slideLoad?: (slide: HTMLElement) => Promise<void>;
     onSlideClick?: (index: number, element: HTMLElement) => void;
     linkedSwipers?: SwiperInterface[];
-    breakpoint?: number;
     slideStart?: number;
     draggable?: boolean;
 }
 
 declare class Swiper implements SwiperInterface {
-    private _state;
-    private _swipeSession;
-    private _indexChangeCallback;
-    private _navigationElements;
-    private _childrenSwipers;
-    private _slideClassName;
-    private _swiperElement;
-    private _slidesWrapper;
-    private _breakpoint;
-    private _auto;
-    private _autoInterval;
-    private _slides;
-    private _slideCount;
-    private _draggable;
-    private _slideLoad;
-    private _slideClick;
-    private _eventListeners;
-    private _activeSessionEventListeners;
+    _state: SwiperState;
+    _swipeSession: SwipeSession;
+    _indexChangeCallback: ((index: number) => void) | null;
+    _navigationElements: NavigationElements;
+    _childrenSwipers: SwiperInterface[] | null;
+    _slideClassName: string | null;
+    _swiperElement: HTMLElement | null;
+    _slidesWrapper: HTMLElement | null;
+    _auto: number | null;
+    _autoInterval: NodeJS.Timeout | undefined;
+    _slides: SwiperSlide[];
+    _slideCount: number;
+    _draggable: boolean;
+    _slideLoad: ((slide: HTMLElement) => Promise<void>) | null;
+    _slideClick: ((index: number, element: HTMLElement) => void) | null;
+    _eventListeners: [
+        HTMLElement | null | Window,
+        string,
+        (e: Event) => void,
+        {
+            capture?: boolean;
+            passive?: boolean;
+        }?
+    ][];
+    _activeSessionEventListeners: {
+        mouse: [keyof DocumentEventMap, (e: MouseEvent | TouchEvent) => void][];
+        touch: [keyof DocumentEventMap, (e: MouseEvent | TouchEvent) => void][];
+    };
     /**
     * Constructor for the Swiper class.
     *
@@ -53,19 +91,20 @@ declare class Swiper implements SwiperInterface {
      *
      * @param {number} index - The index at which to start the slider
      */
-    start(index?: number): void;
+    start: (index?: number) => void;
     /**
-     * A private function to handle hover behavior.
+     * A function to handle hover behavior.
      */
-    private _handleHover;
+    _handleHover: () => void;
+    _preventDefault: (e: Event) => void;
     /**
     * Handles the click event for the previous button.
     */
-    private _handlePrevClick;
+    _handlePrevClick: () => void;
     /**
      * Handles the click event for navigating to the next item.
      */
-    private _handleNextClick;
+    _handleNextClick: () => void;
     /**
      * Handle the click event on a slide element.
      *
@@ -73,72 +112,61 @@ declare class Swiper implements SwiperInterface {
      * @param {HTMLElement} element - the slide element
      * @param {number} index - the index of the slide
      */
-    private _handleSlideClick;
+    _handleSlideClick: (e: Event, element: HTMLElement, index: number) => void;
     /**
      * Update dimensions and positions of slides
      */
-    private _getDimensions;
+    _getDimensions: () => void;
     /**
      * Stops all event listeners and resets the state of the component.
      */
-    stop(): void;
+    stop: () => void;
     /**
      * Translates the slides wrapper by the specified value.
      *
      * @param {number} value - The value to translate by
      * @param {number | null} duration - The duration of the translation, defaults to null
      */
-    private _translate;
+    _translate: (value: number, duration?: number | null) => void;
     /**
      * Handles the push event triggered by a mouse click or touch on the swiper element.
      *
-     * @param {MouseEvent | TouchEvent} e - The event object.
-     * @return {void}
      */
-    private _handlePush;
+    _handlePush: (e: MouseEvent | TouchEvent) => void;
     /**
      * Handles the release action triggered by a mouse up or touch end.
      *
      */
-    private _handleRelease;
+    _handleRelease: () => void;
     /**
      * Do an action based on the given event type.
      *
-     * @param {("release" | "push" | "move")} ev - The type of event to trigger
+     * @param {("release" | "push" | "move")} ev - The type of event
      */
-    private _triggerEvent;
+    _triggerEvent: (ev: "release" | "push" | "move") => void;
     /**
      * Handle the move event, updating swipe session data and triggering move to do related actions.
-     *
-     * @param {MouseEvent | TouchEvent} e - The mouse or touch event
-     * @return {void}
      */
-    private _handleMove;
+    _handleMove: (e: MouseEvent | TouchEvent) => void;
     /**
      * Sets the index of the slider and optionally performs a translation.
      *
      * @param {number} index - The index to set.
      * @param {boolean} translate - Optional flag to perform translation. Defaults to true.
      */
-    private _setIndex;
+    _setIndex: (index: number, translate?: boolean) => void;
     /**
      * Retrieves the active index based on the given position.
-     *
-     * @param {number} translate - the position to search for
-     * @return {number} the index of the slide
      */
-    private _getIndexByPosition;
+    _getIndexByPosition: (translate: number) => number;
     /**
      * Check if all slides are loaded.
      */
-    private _checkIfAllLoaded;
+    _checkIfAllLoaded: () => void;
     get index(): number;
     set index(index: number);
     /**
      * setter for slide click callback
-     *
-     * @param {function} callback - callback function to be invoked on slide click
-     * @return {void}
      */
     set slideClick(callback: (index: number, element: HTMLElement) => void);
 }

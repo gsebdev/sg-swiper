@@ -8,7 +8,6 @@ export interface SwiperArgs {
   slideLoad?: (slide: HTMLElement) => Promise<void>;
   onSlideClick?: (index: number, element: HTMLElement) => void;
   linkedSwipers?: SwiperInterface[];
-  breakpoint?: number;
   slideStart?: number;
   draggable?: boolean;
 }

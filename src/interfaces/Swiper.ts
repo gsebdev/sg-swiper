@@ -1,3 +1,6 @@
+import { SwipeSession } from "./SwipeSession";
+import { SwiperState } from "./SwipeState";
+
 export interface SwiperSlide {
   element: HTMLElement;
   id: string;
@@ -11,8 +14,8 @@ export interface NavigationElements {
 }
 
 export interface SwiperInterface {
-    start(index?: number): void;
-    stop(): void;
-    index: number;
-    slideClick?: (index: number, element: HTMLElement) => void;
-  }
+  start(index?: number): void;
+  stop(): void;
+  index: number;
+  slideClick?: (index: number, element: HTMLElement) => void;
+}
