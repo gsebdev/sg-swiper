@@ -6,26 +6,26 @@ body {
 }
 .swiper-demo {
     width: 100vw;
-    max-width: 1280px;
+    /*max-width: 1280px;*/
     overflow: hidden;
     padding: 20px 0;
     position: relative;
     cursor: grab;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0 auto;
-    border: 1px dashed rgb(255, 111, 111);
+    /*border: 1px dashed rgb(255, 111, 111);*/
     user-select: none;
 
 }
 .thumbs-swiper {
     width: 100vw;
-    max-width: 1024px;
+    /*max-width: 1024px;*/
     overflow: hidden;
     padding: 20px 0;
     position: relative;
     cursor: grab;
-    margin: 0 auto;
-    border: 1px dashed rgb(255, 111, 111);
+    margin: 5px auto;
+    /*border: 1px dashed rgb(255, 111, 111);*/
 }
 .swiper-nav {
     position: absolute;
@@ -68,18 +68,24 @@ body {
     display: flex;
     flex-wrap: nowrap;
     height: 100%;
-    column-gap: 10px;
+    column-gap: 20px;
+}
+.thumbs-swiper .swiper-wrapper {
+    column-gap: 8px;
 }
 .swiper-slide {
     position: relative;
     flex: 0 0 30%;
+    max-width: 400px;
     height: auto;
     border-radius: 20px;
     overflow: hidden;
+    border: 1px lightgrey solid;
     box-shadow: 2px 2px 5px 0px rgba(0,0,0,0.1);
 }
 .thumbs-swiper .swiper-slide{
    flex: 0 0 15%;
+   max-width: 150px;
 }
 .swiper-slide figure {
     position: relative;
@@ -120,8 +126,6 @@ body {
 .swiper-slide .bottom-container p:last-child {
     font-size: 1rem;
     color: rgb(93, 93, 93);
-    text-overflow: ellipsis;
-    overflow: hidden;
 }
 .swiper-slide[data-loaded=false] figure {
     display: grid;
@@ -145,6 +149,20 @@ body {
     }
 }
 @media screen and (max-width: 576px) {
+    .swiper-slide .bottom-container p:first-child {
+        font-size: 0.85rem;
+        margin: 5px 0;
+    }
+    .swiper-slide .bottom-container h3 {
+        text-transform: uppercase;
+        font-size: 1.65rem;
+        color: rgb(48, 48, 48);
+        margin: 5px 0
+    }
+    .swiper-slide .bottom-container p:last-child {
+        margin: 5px 0;
+        font-size: 0.85rem;
+    }
     .swiper-slide {     
         flex: 0 0 80%;
     }
