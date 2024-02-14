@@ -3,7 +3,7 @@ export interface SwiperState {
   currentPosition: number;
   initialized: boolean;
   swiperWidth: number;
-  slidesWrapperWidth: number;
+  slidesScrollWidth: number;
   slidesLoaded: boolean;
-  fixedTranslate: boolean | number;
+  noTranslate: boolean;
 }

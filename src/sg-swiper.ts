@@ -13,9 +13,9 @@ export default class Swiper implements SwiperInterface {
     currentPosition: 0,
     initialized: false,
     swiperWidth: 0,
-    slidesWrapperWidth: 0,
+    slidesScrollWidth: 0,
     slidesLoaded: true,
-    fixedTranslate: false
+    noTranslate: false
   };
   _swipeSession: SwipeSession = {
     active: false,
@@ -271,22 +271,15 @@ export default class Swiper implements SwiperInterface {
   _getDimensions = () => {
     // Update swiper width
     this._state.swiperWidth = this._swiperElement?.offsetWidth ?? 0;
-    this._state.slidesWrapperWidth = this._slidesWrapper?.scrollWidth ?? 0;
-
-    if (this._slidesWrapper) {
-      if (this._state.slidesWrapperWidth <= this._state.swiperWidth) {
-        const fixed = (this._state.swiperWidth - this._state.slidesWrapperWidth) / 2
-        this._translate(fixed, 0);
-        this._state.fixedTranslate = fixed;
-      } else {
-        this._state.fixedTranslate = false;
-      }
-    }
 
     // Update slides dimensions and positions
-    this._slides = this._slides.map(slide => {
+    this._slides = this._slides.map((slide, index) => {
       const width = slide.element.offsetWidth
       const position = slide.element.offsetLeft
+      //set the scroll width of the slides
+      if (index === this._slideCount - 1) {
+        this._state.slidesScrollWidth = position + width + this._slides[0].position;
+      }
       return {
         ...slide,
         width,
@@ -294,13 +287,16 @@ export default class Swiper implements SwiperInterface {
       }
     }
     );
-
-    // Translate to current slide if initialized
-    if (this._state.initialized && this._slides[this._state.currentIndex]) {
-      this._translate(
-        (this._state.swiperWidth - this._slides[this._state.currentIndex].width) / 2 -
-        this._slides[this._state.currentIndex].position
-      );
+    if (this._state.slidesScrollWidth <= this._state.swiperWidth) {
+      // stop translating
+      this._translate(0);
+      this._state.noTranslate = true;
+      if(this._swiperElement) this._swiperElement.classList.add('no-translate');
+      
+    } else {
+      this._state.noTranslate = false;
+      if(this._swiperElement) this._swiperElement.classList.remove('no-translate');
+      this._setIndex(this._state.currentIndex);
     }
   }
 
@@ -347,7 +343,14 @@ export default class Swiper implements SwiperInterface {
    * @param {number | null} duration - The duration of the translation, defaults to null
    */
   _translate = (value: number, duration: number | null = null) => {
-    if(this._state.fixedTranslate === this._state.currentPosition) return;
+    // prevnet translating if no translate
+    if (this._state.noTranslate) {
+      if(this._state.currentPosition !== 0 ) {
+        value = 0;
+      } else {
+        return;
+      }
+    }
     if (this._slidesWrapper) {
       this._slidesWrapper.style.transform = `translate3d(${value}px, 0, 0)`;
       if (duration)
@@ -433,6 +436,8 @@ export default class Swiper implements SwiperInterface {
     }
 
     if (ev === "move") {
+      if(this._state.noTranslate) return;
+
       // calculate the new translate position and translate slider
       const newTranslate = this._state.currentPosition + this._swipeSession.lastEventDeltaX;
       this._translate(newTranslate);
@@ -454,7 +459,7 @@ export default class Swiper implements SwiperInterface {
    * Handle the move event, updating swipe session data and triggering move to do related actions.
    */
   _handleMove = (e: MouseEvent | TouchEvent): void => {
-    if (!this._swipeSession.active) return;
+    if (!this._swipeSession.active || this._state.noTranslate) return;
     const { type, startX, lastEvent } = this._swipeSession;
 
     // get the current mouse or touch position
@@ -490,8 +495,20 @@ export default class Swiper implements SwiperInterface {
 
     //Slides need to be lazy loaded
     if (!this._state.slidesLoaded && this._slideLoad) {
-      const numOfAdjacentSlidesVisible = Math.ceil(((this._state.swiperWidth / this._slides[index].width) - 1) / 2);
-      this._slideLoad(this._slides[index]?.element)
+      // if no translate is set, that means slides are all visible, then load everything
+      if(this._state.noTranslate) {
+        this._slides.forEach((slide) => {
+          (this._slideLoad as any)(slide.element).then(() => {
+            slide.loaded = true;
+            this._checkIfAllLoaded();
+          })
+        })
+      } else { /// swiper is translating, progressive load then        
+        //load active slide
+        if(this._slides[index]) {
+          // calc adjacent visible slides
+          const numOfAdjacentSlidesVisible = Math.max(0, Math.ceil(((this._state.swiperWidth / this._slides[index].width) - 1) / 2));
+          this._slideLoad(this._slides[index].element)
         .then(() => {
           this._slides[index].loaded = true;
           this._checkIfAllLoaded();
@@ -519,15 +536,17 @@ export default class Swiper implements SwiperInterface {
         .catch((err) => {
           console.error(err);
         });
+        }
+      }
     }
 
     // if translate is needed then perform translation
-    if (translate && this._slides[index]) {
+    if (translate && this._slides[index] && !this._state.noTranslate) {
       let value = (this._state.swiperWidth - this._slides[index].width) / 2 - this._slides[index].position
-      
+
       //if stick to edges
       if (this._limitToEdges) {
-        const limit = this._state.swiperWidth - this._state.slidesWrapperWidth;
+        const limit = this._state.swiperWidth - this._state.slidesScrollWidth;
         const stickToStart = value > - (this._slides[0].width / 2);
         const stickToEnd = value < limit + (this._slides[this._slideCount - 1].width / 2);
         if (stickToEnd && stickToStart) {
@@ -536,6 +555,8 @@ export default class Swiper implements SwiperInterface {
           value = 0;
         } else if (stickToEnd) {
           value = limit;
+        } else {
+          value = Math.min(0, Math.max(limit, value));
         }
       }
       this._translate(value, 500);
@@ -575,10 +596,6 @@ export default class Swiper implements SwiperInterface {
    */
   _getIndexByPosition = (translate: number): number => {
     const offset = -1 * this._state.swiperWidth / 2;
-    const ii = this._slides.findIndex(
-      slide => offset + slide.position <= translate && offset + slide.position + slide.width >= translate
-    )
-
     return this._slides.findIndex(slide => offset + slide.position <= translate && offset + slide.position + slide.width >= translate);
   }
 

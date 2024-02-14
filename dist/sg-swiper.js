@@ -28,9 +28,9 @@ var Swiper = class {
     currentPosition: 0,
     initialized: false,
     swiperWidth: 0,
-    slidesWrapperWidth: 0,
+    slidesScrollWidth: 0,
     slidesLoaded: true,
-    fixedTranslate: false
+    noTranslate: false
   };
   _swipeSession = {
     active: false,
@@ -222,22 +222,15 @@ var Swiper = class {
    * Update dimensions and positions of slides
    */
   _getDimensions = () => {
-    var _a, _b;
+    var _a;
     this._state.swiperWidth = ((_a = this._swiperElement) == null ? void 0 : _a.offsetWidth) ?? 0;
-    this._state.slidesWrapperWidth = ((_b = this._slidesWrapper) == null ? void 0 : _b.scrollWidth) ?? 0;
-    if (this._slidesWrapper) {
-      if (this._state.slidesWrapperWidth <= this._state.swiperWidth) {
-        const fixed = (this._state.swiperWidth - this._state.slidesWrapperWidth) / 2;
-        this._translate(fixed, 0);
-        this._state.fixedTranslate = fixed;
-      } else {
-        this._state.fixedTranslate = false;
-      }
-    }
     this._slides = this._slides.map(
-      (slide) => {
+      (slide, index) => {
         const width = slide.element.offsetWidth;
         const position = slide.element.offsetLeft;
+        if (index === this._slideCount - 1) {
+          this._state.slidesScrollWidth = position + width + this._slides[0].position;
+        }
         return {
           ...slide,
           width,
@@ -245,10 +238,16 @@ var Swiper = class {
         };
       }
     );
-    if (this._state.initialized && this._slides[this._state.currentIndex]) {
-      this._translate(
-        (this._state.swiperWidth - this._slides[this._state.currentIndex].width) / 2 - this._slides[this._state.currentIndex].position
-      );
+    if (this._state.slidesScrollWidth <= this._state.swiperWidth) {
+      this._translate(0);
+      this._state.noTranslate = true;
+      if (this._swiperElement)
+        this._swiperElement.classList.add("no-translate");
+    } else {
+      this._state.noTranslate = false;
+      if (this._swiperElement)
+        this._swiperElement.classList.remove("no-translate");
+      this._setIndex(this._state.currentIndex);
     }
   };
   /**
@@ -284,8 +283,13 @@ var Swiper = class {
    * @param {number | null} duration - The duration of the translation, defaults to null
    */
   _translate = (value, duration = null) => {
-    if (this._state.fixedTranslate === this._state.currentPosition)
-      return;
+    if (this._state.noTranslate) {
+      if (this._state.currentPosition !== 0) {
+        value = 0;
+      } else {
+        return;
+      }
+    }
     if (this._slidesWrapper) {
       this._slidesWrapper.style.transform = `translate3d(${value}px, 0, 0)`;
       if (duration)
@@ -348,6 +352,8 @@ var Swiper = class {
       this._setIndex(this._state.currentIndex);
     }
     if (ev === "move") {
+      if (this._state.noTranslate)
+        return;
       const newTranslate = this._state.currentPosition + this._swipeSession.lastEventDeltaX;
       this._translate(newTranslate);
       const newIndex = this._getIndexByPosition(-newTranslate);
@@ -364,7 +370,7 @@ var Swiper = class {
    * Handle the move event, updating swipe session data and triggering move to do related actions.
    */
   _handleMove = (e) => {
-    if (!this._swipeSession.active)
+    if (!this._swipeSession.active || this._state.noTranslate)
       return;
     const { type, startX, lastEvent } = this._swipeSession;
     const clientX = type === "mouse" ? e.clientX : e.touches[0].clientX;
@@ -384,36 +390,47 @@ var Swiper = class {
    * @param {boolean} translate - Optional flag to perform translation. Defaults to true.
    */
   _setIndex = (index, translate = true) => {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d;
     if (!this._state.slidesLoaded && this._slideLoad) {
-      const numOfAdjacentSlidesVisible = Math.ceil((this._state.swiperWidth / this._slides[index].width - 1) / 2);
-      this._slideLoad((_a = this._slides[index]) == null ? void 0 : _a.element).then(() => {
-        this._slides[index].loaded = true;
-        this._checkIfAllLoaded();
-        if (!this._state.slidesLoaded) {
-          for (let i = 1; i <= numOfAdjacentSlidesVisible; i++) {
-            if (this._slides[index + i]) {
-              this._slideLoad(this._slides[index + i].element).then(() => {
-                this._slides[index + i].loaded = true;
-                this._checkIfAllLoaded();
-              });
+      if (this._state.noTranslate) {
+        this._slides.forEach((slide) => {
+          this._slideLoad(slide.element).then(() => {
+            slide.loaded = true;
+            this._checkIfAllLoaded();
+          });
+        });
+      } else {
+        if (this._slides[index]) {
+          const numOfAdjacentSlidesVisible = Math.max(0, Math.ceil((this._state.swiperWidth / this._slides[index].width - 1) / 2));
+          this._slideLoad(this._slides[index].element).then(() => {
+            this._slides[index].loaded = true;
+            this._checkIfAllLoaded();
+            if (!this._state.slidesLoaded) {
+              for (let i = 1; i <= numOfAdjacentSlidesVisible; i++) {
+                if (this._slides[index + i]) {
+                  this._slideLoad(this._slides[index + i].element).then(() => {
+                    this._slides[index + i].loaded = true;
+                    this._checkIfAllLoaded();
+                  });
+                }
+                if (this._slides[index - i]) {
+                  this._slideLoad(this._slides[index - i].element).then(() => {
+                    this._slides[index - i].loaded = true;
+                    this._checkIfAllLoaded();
+                  });
+                }
+              }
             }
-            if (this._slides[index - i]) {
-              this._slideLoad(this._slides[index - i].element).then(() => {
-                this._slides[index - i].loaded = true;
-                this._checkIfAllLoaded();
-              });
-            }
-          }
+          }).catch((err) => {
+            console.error(err);
+          });
         }
-      }).catch((err) => {
-        console.error(err);
-      });
+      }
     }
-    if (translate && this._slides[index]) {
+    if (translate && this._slides[index] && !this._state.noTranslate) {
       let value = (this._state.swiperWidth - this._slides[index].width) / 2 - this._slides[index].position;
       if (this._limitToEdges) {
-        const limit = this._state.swiperWidth - this._state.slidesWrapperWidth;
+        const limit = this._state.swiperWidth - this._state.slidesScrollWidth;
         const stickToStart = value > -(this._slides[0].width / 2);
         const stickToEnd = value < limit + this._slides[this._slideCount - 1].width / 2;
         if (stickToEnd && stickToStart) {
@@ -422,16 +439,18 @@ var Swiper = class {
           value = 0;
         } else if (stickToEnd) {
           value = limit;
+        } else {
+          value = Math.min(0, Math.max(limit, value));
         }
       }
       this._translate(value, 500);
     }
-    (_b = this._slides[index]) == null ? void 0 : _b.element.classList.add("is-active");
-    (_c = this._swiperElement) == null ? void 0 : _c.classList.remove("is-first", "is-last");
+    (_a = this._slides[index]) == null ? void 0 : _a.element.classList.add("is-active");
+    (_b = this._swiperElement) == null ? void 0 : _b.classList.remove("is-first", "is-last");
     if (index === 0) {
-      (_d = this._swiperElement) == null ? void 0 : _d.classList.add("is-first");
+      (_c = this._swiperElement) == null ? void 0 : _c.classList.add("is-first");
     } else if (index === this._slideCount - 1) {
-      (_e = this._swiperElement) == null ? void 0 : _e.classList.add("is-last");
+      (_d = this._swiperElement) == null ? void 0 : _d.classList.add("is-last");
     }
     if (index === this._state.currentIndex)
       return;
@@ -452,9 +471,6 @@ var Swiper = class {
    */
   _getIndexByPosition = (translate) => {
     const offset = -1 * this._state.swiperWidth / 2;
-    const ii = this._slides.findIndex(
-      (slide) => offset + slide.position <= translate && offset + slide.position + slide.width >= translate
-    );
     return this._slides.findIndex((slide) => offset + slide.position <= translate && offset + slide.position + slide.width >= translate);
   };
   /**
