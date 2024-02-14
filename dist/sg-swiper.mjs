@@ -228,6 +228,9 @@ var Swiper = class {
       this._navigationElements.next.forEach((el) => {
         el.removeEventListener("click", this._handleNextClick.bind(this));
       });
+    if (this._autoInterval) {
+      clearInterval(this._autoInterval);
+    }
     this._translate(0);
     this._state.initialized = false;
   };

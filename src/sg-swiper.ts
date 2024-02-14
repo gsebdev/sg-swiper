@@ -311,6 +311,10 @@ export default class Swiper implements SwiperInterface {
         el.removeEventListener("click", this._handleNextClick.bind(this));
       });
 
+    // Clear auto slide interval
+    if (this._autoInterval) {
+      clearInterval(this._autoInterval);
+    }
     // Reset swiper state
     this._translate(0);
     this._state.initialized = false;
