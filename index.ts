@@ -1,49 +1,66 @@
 import Swiper from "./src/sg-swiper";
+let activeSwipers: Swiper[] = [];
+const initSwipers = () => {
+  const limitToEdges = (
+    document.querySelector("#limit-edges") as HTMLInputElement
+  )?.checked;
+  const auto = (document.querySelector("#auto") as HTMLInputElement)?.checked;
+  const draggable = (document.querySelector("#draggable") as HTMLInputElement)
+    ?.checked;
+  const navigation = (document.querySelector("#navigation") as HTMLInputElement)
+    ?.checked;
+  const linkedswiper = (
+    document.querySelector("#linked-swiper") as HTMLInputElement
+  )?.checked;
 
-document.addEventListener("DOMContentLoaded", () => {
   const indexInfoElement = document.querySelector(".active-slide-info");
   const handleChangeSlide = (index) => {
     if (indexInfoElement) indexInfoElement.textContent = index;
   };
+
   if (document.querySelector(".swiper-demo")) {
     const thumnailSwiper = new Swiper(
       document.querySelector(".thumbs-swiper") as HTMLElement,
       {
         onSlideClick: changeSlide,
         slideLoad: slideLoad,
-        draggable: true
+        draggable: draggable,
+        limitToEdges: limitToEdges,
       }
     );
     const swiper = new Swiper(
       document.querySelector(".swiper-demo") as HTMLElement,
       {
         slideClassName: "swiper-slide",
-        draggable: true,
+        draggable: draggable,
         onSlideClick: (index) => {
           swiper.index = index;
           console.log("slide click : " + index);
         },
-        navigation: {
-          next: document.querySelector(".swiper-nav[data-direction=next]")
-            ? [
-                document.querySelector(
-                  ".swiper-nav[data-direction=next]"
-                ) as HTMLElement,
-              ]
-            : undefined,
-          prev: document.querySelector(".swiper-nav[data-direction=prev]")
-            ? [
-                document.querySelector(
-                  ".swiper-nav[data-direction=prev]"
-                ) as HTMLElement,
-              ]
-            : undefined,
-        },
-        slideStart: 3,
-        auto: 4000,
+        navigation: navigation
+          ? {
+              next: document.querySelector(".swiper-nav[data-direction=next]")
+                ? [
+                    document.querySelector(
+                      ".swiper-nav[data-direction=next]"
+                    ) as HTMLElement,
+                  ]
+                : undefined,
+              prev: document.querySelector(".swiper-nav[data-direction=prev]")
+                ? [
+                    document.querySelector(
+                      ".swiper-nav[data-direction=prev]"
+                    ) as HTMLElement,
+                  ]
+                : undefined,
+            }
+          : undefined,
+        slideStart: 0,
+        auto: auto ? 3000 : undefined,
         onSlideChange: handleChangeSlide,
         slideLoad: slideLoad,
-        linkedSwipers: [thumnailSwiper],
+        linkedSwipers: linkedswiper ? [thumnailSwiper] : undefined,
+        limitToEdges: limitToEdges,
       }
     );
 
@@ -72,5 +89,21 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
     }
+    return [swiper, thumnailSwiper];
   }
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+  const checkboxes = document.querySelectorAll("input[type=checkbox]");
+  checkboxes.forEach((checkbox) => {
+    checkbox.addEventListener("change", () => {
+      activeSwipers.forEach((swiper) => {
+        swiper.stop();
+      });
+      const swipers = initSwipers();
+      activeSwipers = swipers ? swipers : [];
+    });
+  });
+  const swipers = initSwipers();
+  activeSwipers = swipers ? swipers : [];
 });

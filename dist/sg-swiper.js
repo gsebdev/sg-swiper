@@ -28,7 +28,9 @@ var Swiper = class {
     currentPosition: 0,
     initialized: false,
     swiperWidth: 0,
-    slidesLoaded: true
+    slidesWrapperWidth: 0,
+    slidesLoaded: true,
+    fixedTranslate: false
   };
   _swipeSession = {
     active: false,
@@ -54,6 +56,7 @@ var Swiper = class {
   _slides = [];
   _slideCount = 0;
   _draggable = false;
+  _limitToEdges = false;
   _slideLoad = null;
   _slideClick = null;
   _eventListeners;
@@ -81,6 +84,7 @@ var Swiper = class {
       this._slideClick = args.onSlideClick ?? null;
       this._state.slidesLoaded = args.slideLoad ? false : true;
       this._draggable = args.draggable ?? false;
+      this._limitToEdges = args.limitToEdges ?? false;
     }
     const slideCollection = this._slideClassName ? this._swiperElement.querySelectorAll("." + this._slideClassName) : ((_a = this._swiperElement.firstElementChild) == null ? void 0 : _a.children) ?? [];
     if (slideCollection.length === 0) {
@@ -218,13 +222,29 @@ var Swiper = class {
    * Update dimensions and positions of slides
    */
   _getDimensions = () => {
-    var _a;
+    var _a, _b;
     this._state.swiperWidth = ((_a = this._swiperElement) == null ? void 0 : _a.offsetWidth) ?? 0;
-    this._slides = this._slides.map((slide) => ({
-      ...slide,
-      width: slide.element.offsetWidth,
-      position: slide.element.offsetLeft
-    }));
+    this._state.slidesWrapperWidth = ((_b = this._slidesWrapper) == null ? void 0 : _b.scrollWidth) ?? 0;
+    if (this._slidesWrapper) {
+      if (this._state.slidesWrapperWidth <= this._state.swiperWidth) {
+        const fixed = (this._state.swiperWidth - this._state.slidesWrapperWidth) / 2;
+        this._translate(fixed, 0);
+        this._state.fixedTranslate = fixed;
+      } else {
+        this._state.fixedTranslate = false;
+      }
+    }
+    this._slides = this._slides.map(
+      (slide) => {
+        const width = slide.element.offsetWidth;
+        const position = slide.element.offsetLeft;
+        return {
+          ...slide,
+          width,
+          position
+        };
+      }
+    );
     if (this._state.initialized && this._slides[this._state.currentIndex]) {
       this._translate(
         (this._state.swiperWidth - this._slides[this._state.currentIndex].width) / 2 - this._slides[this._state.currentIndex].position
@@ -264,6 +284,8 @@ var Swiper = class {
    * @param {number | null} duration - The duration of the translation, defaults to null
    */
   _translate = (value, duration = null) => {
+    if (this._state.fixedTranslate === this._state.currentPosition)
+      return;
     if (this._slidesWrapper) {
       this._slidesWrapper.style.transform = `translate3d(${value}px, 0, 0)`;
       if (duration)
@@ -388,11 +410,22 @@ var Swiper = class {
         console.error(err);
       });
     }
-    if (translate && this._slides[index])
-      this._translate(
-        (this._state.swiperWidth - this._slides[index].width) / 2 - this._slides[index].position,
-        500
-      );
+    if (translate && this._slides[index]) {
+      let value = (this._state.swiperWidth - this._slides[index].width) / 2 - this._slides[index].position;
+      if (this._limitToEdges) {
+        const limit = this._state.swiperWidth - this._state.slidesWrapperWidth;
+        const stickToStart = value > -(this._slides[0].width / 2);
+        const stickToEnd = value < limit + this._slides[this._slideCount - 1].width / 2;
+        if (stickToEnd && stickToStart) {
+          value = this._swipeSession.direction < 0 ? limit : 0;
+        } else if (stickToStart) {
+          value = 0;
+        } else if (stickToEnd) {
+          value = limit;
+        }
+      }
+      this._translate(value, 500);
+    }
     (_b = this._slides[index]) == null ? void 0 : _b.element.classList.add("is-active");
     (_c = this._swiperElement) == null ? void 0 : _c.classList.remove("is-first", "is-last");
     if (index === 0) {

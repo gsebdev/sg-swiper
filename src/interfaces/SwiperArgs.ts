@@ -10,4 +10,5 @@ export interface SwiperArgs {
   linkedSwipers?: SwiperInterface[];
   slideStart?: number;
   draggable?: boolean;
+  limitToEdges?: boolean;
 }

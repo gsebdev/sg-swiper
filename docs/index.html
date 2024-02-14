@@ -11,251 +11,273 @@
 </head>
 
 <body>
-    <div style="display: flex; justify-content: space-between; max-width: 1280px; padding: 10px 15px;margin: 0 auto;">
-        <h1>Swiper demo</h1>
-        <div>
+    <div>
+        <div class="panel">
+            <h1>Swiper demo</h1>
             <p><b>Active slide</b> : <span class="active-slide-info">0</span></p>
+            <label for="limit-edges">
+                Limit edges
+                <input type="checkbox" name="limit-edges" id="limit-edges">
+            </label>
+            <label for="auto">
+                Auto sliding
+                <input type="checkbox" checked name="auto" id="auto">
+            </label>
+            <label for="draggable">
+                Draggable
+                <input type="checkbox" checked name="draggable" id="draggable">
+            </label>
+            <label for="navigation">
+                Navigation
+                <input type="checkbox" checked name="navigation" id="navigation">
+            </label>
+            <label for="linkedswiper">
+                Linked Thumbs and Slides
+                <input type="checkbox" checked name="linked-swiper" id="linked-swiper">
+            </label>
+            
         </div>
-    </div>
-
-    <div class="swiper-demo">
-        <div class="swiper-nav" data-direction="prev">
-            <svg fill="currentColor" viewBox="0 0 42 42">
-                <polygon fill-rule="evenodd" points="31,38.32 13.391,21 31,3.68 28.279,1 8,21.01 28.279,41 " />
-            </svg>
-        </div>
-        <div class="swiper-nav" data-direction="next">
-            <svg fill="currentColor" viewBox="0 0 24 24">
-                <g id="next">
-                    <g>
-                        <polygon points="6.8,23.7 5.4,22.3 15.7,12 5.4,1.7 6.8,0.3 18.5,12 		" />
-                    </g>
-                </g>
-            </svg>
-        </div>
-        <div class="swiper-wrapper">
-            <div class="swiper-slide" data-loaded="false">
-                <figure>
-                    <img data-src="https://picsum.photos/seed/sg/500" alt="" />
-                </figure>
-                <div class="bottom-container">
-                    <p>Category</p>
-                    <h3>John Doe</h3>
-                    <p>
-                        Le lorem ipsum est, en imprimerie, une suite de mots sans
-                        signification utilisée à titre provisoire pour calibrer une mise
-                        en page, le texte définitif venant remplacer le faux-texte dès
-                        qu'il est prêt ou que la mise en page est achevée. Généralement,
-                        on utilise un texte en faux latin, le Lorem ipsum ou Lipsum.
-                    </p>
+        <div class="content">
+            <div class="swiper-demo">
+               <div class="swiper-nav" data-direction="prev">
+                    <svg fill="currentColor" viewBox="0 0 42 42">
+                        <polygon fill-rule="evenodd" points="31,38.32 13.391,21 31,3.68 28.279,1 8,21.01 28.279,41 " />
+                    </svg>
+                </div>
+                <div class="swiper-nav" data-direction="next">
+                    <svg fill="currentColor" viewBox="0 0 24 24">
+                        <g id="next">
+                            <g>
+                                <polygon points="6.8,23.7 5.4,22.3 15.7,12 5.4,1.7 6.8,0.3 18.5,12 		" />
+                            </g>
+                        </g>
+                    </svg>
+                </div>
+                <div class="swiper-wrapper">
+                    <!-- <div class="swiper-slide" data-loaded="false">
+                        <figure>
+                            <img data-src="https://picsum.photos/seed/sg/500" alt="" />
+                        </figure>
+                        <div class="bottom-container">
+                            <p>Category</p>
+                            <h3>John Doe</h3>
+                            <p>
+                                Le lorem ipsum est, en imprimerie, une suite de mots sans
+                                signification utilisée à titre provisoire pour calibrer une mise
+                                en page, le texte définitif venant remplacer le faux-texte dès
+                                qu'il est prêt ou que la mise en page est achevée. Généralement,
+                                on utilise un texte en faux latin, le Lorem ipsum ou Lipsum.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="swiper-slide" data-loaded="false">
+                        <figure>
+                            <img data-src="https://picsum.photos/seed/dhghza/500" alt="" />
+                        </figure>
+                        <div class="bottom-container">
+                            <p>Category</p>
+                            <h3>John Doe</h3>
+                            <p>
+                                Le lorem ipsum est, en imprimerie, une suite de mots sans
+                                signification utilisée à titre provisoire pour calibrer une mise
+                                en page, le texte définitif venant remplacer le faux-texte dès
+                                qu'il est prêt ou que la mise en page est achevée. Généralement,
+                                on utilise un texte en faux latin, le Lorem ipsum ou Lipsum.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="swiper-slide" data-loaded="false">
+                        <figure>
+                            <img data-src="https://picsum.photos/seed/seshj/500" alt="" />
+                        </figure>
+                        <div class="bottom-container">
+                            <p>Category</p>
+                            <h3>John Doe</h3>
+                            <p>
+                                Le lorem ipsum est, en imprimerie, une suite de mots sans
+                                signification utilisée à titre provisoire pour calibrer une mise
+                                en page, le texte définitif venant remplacer le faux-texte dès
+                                qu'il est prêt ou que la mise en page est achevée. Généralement,
+                                on utilise un texte en faux latin, le Lorem ipsum ou Lipsum.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="swiper-slide" data-loaded="false">
+                        <figure>
+                            <img data-src="https://picsum.photos/seed/esdrdtyj/500" alt="" />
+                        </figure>
+                        <div class="bottom-container">
+                            <p>Category</p>
+                            <h3>John Doe</h3>
+                            <p>
+                                Le lorem ipsum est, en imprimerie, une suite de mots sans
+                                signification utilisée à titre provisoire pour calibrer une mise
+                                en page, le texte définitif venant remplacer le faux-texte dès
+                                qu'il est prêt ou que la mise en page est achevée. Généralement,
+                                on utilise un texte en faux latin, le Lorem ipsum ou Lipsum.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="swiper-slide" data-loaded="false">
+                        <figure>
+                            <img data-src="https://picsum.photos/seed/aaa/500" alt="" />
+                        </figure>
+                        <div class="bottom-container">
+                            <p>Category</p>
+                            <h3>John Doe</h3>
+                            <p>
+                                Le lorem ipsum est, en imprimerie, une suite de mots sans
+                                signification utilisée à titre provisoire pour calibrer une mise
+                                en page, le texte définitif venant remplacer le faux-texte dès
+                                qu'il est prêt ou que la mise en page est achevée. Généralement,
+                                on utilise un texte en faux latin, le Lorem ipsum ou Lipsum.
+                            </p>
+                        </div>
+                    </div> -->
+                    <div class="swiper-slide" data-loaded="false">
+                        <figure>
+                            <img data-src="https://picsum.photos/seed/bbb/500" alt="" />
+                        </figure>
+                        <div class="bottom-container">
+                            <p>Category</p>
+                            <h3>John Doe</h3>
+                            <p>
+                                Le lorem ipsum est, en imprimerie, une suite de mots sans
+                                signification utilisée à titre provisoire pour calibrer une mise
+                                en page, le texte définitif venant remplacer le faux-texte dès
+                                qu'il est prêt ou que la mise en page est achevée. Généralement,
+                                on utilise un texte en faux latin, le Lorem ipsum ou Lipsum.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="swiper-slide" data-loaded="false">
+                        <figure>
+                            <img data-src="https://picsum.photos/seed/fdsgsdfg/500" alt="" />
+                        </figure>
+                        <div class="bottom-container">
+                            <p>Category</p>
+                            <h3>John Doe</h3>
+                            <p>
+                                Le lorem ipsum est, en imprimerie, une suite de mots sans
+                                signification utilisée à titre provisoire pour calibrer une mise
+                                en page, le texte définitif venant remplacer le faux-texte dès
+                                qu'il est prêt ou que la mise en page est achevée. Généralement,
+                                on utilise un texte en faux latin, le Lorem ipsum ou Lipsum.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="swiper-slide" data-loaded="false">
+                        <figure>
+                            <img data-src="https://picsum.photos/seed/cxfslhjg/500" alt="" />
+                        </figure>
+                        <div class="bottom-container">
+                            <p>Category</p>
+                            <h3>John Doe</h3>
+                            <p>
+                                Le lorem ipsum est, en imprimerie, une suite de mots sans
+                                signification utilisée à titre provisoire pour calibrer une mise
+                                en page, le texte définitif venant remplacer le faux-texte dès
+                                qu'il est prêt ou que la mise en page est achevée. Généralement,
+                                on utilise un texte en faux latin, le Lorem ipsum ou Lipsum.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="swiper-slide" data-loaded="false">
+                        <figure>
+                            <img data-src="https://picsum.photos/seed/lmjk/500" alt="" />
+                        </figure>
+                        <div class="bottom-container">
+                            <p>Category</p>
+                            <h3>John Doe</h3>
+                            <p>
+                                Le lorem ipsum est, en imprimerie, une suite de mots sans
+                                signification utilisée à titre provisoire pour calibrer une mise
+                                en page, le texte définitif venant remplacer le faux-texte dès
+                                qu'il est prêt ou que la mise en page est achevée. Généralement,
+                                on utilise un texte en faux latin, le Lorem ipsum ou Lipsum.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="swiper-slide" data-loaded="false">
+                        <figure>
+                            <img data-src="https://picsum.photos/seed/dfgdfg/500" alt="" />
+                        </figure>
+                        <div class="bottom-container">
+                            <p>Category</p>
+                            <h3>John Doe</h3>
+                            <p>
+                                Le lorem ipsum est, en imprimerie, une suite de mots sans
+                                signification utilisée à titre provisoire pour calibrer une mise
+                                en page, le texte définitif venant remplacer le faux-texte dès
+                                qu'il est prêt ou que la mise en page est achevée. Généralement,
+                                on utilise un texte en faux latin, le Lorem ipsum ou Lipsum.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="swiper-slide" data-loaded="false">
-                <figure>
-                    <img data-src="https://picsum.photos/seed/dhghza/500" alt="" />
-                </figure>
-                <div class="bottom-container">
-                    <p>Category</p>
-                    <h3>John Doe</h3>
-                    <p>
-                        Le lorem ipsum est, en imprimerie, une suite de mots sans
-                        signification utilisée à titre provisoire pour calibrer une mise
-                        en page, le texte définitif venant remplacer le faux-texte dès
-                        qu'il est prêt ou que la mise en page est achevée. Généralement,
-                        on utilise un texte en faux latin, le Lorem ipsum ou Lipsum.
-                    </p>
-                </div>
-            </div>
-            <div class="swiper-slide" data-loaded="false">
-                <figure>
-                    <img data-src="https://picsum.photos/seed/seshj/500" alt="" />
-                </figure>
-                <div class="bottom-container">
-                    <p>Category</p>
-                    <h3>John Doe</h3>
-                    <p>
-                        Le lorem ipsum est, en imprimerie, une suite de mots sans
-                        signification utilisée à titre provisoire pour calibrer une mise
-                        en page, le texte définitif venant remplacer le faux-texte dès
-                        qu'il est prêt ou que la mise en page est achevée. Généralement,
-                        on utilise un texte en faux latin, le Lorem ipsum ou Lipsum.
-                    </p>
-                </div>
-            </div>
-            <div class="swiper-slide" data-loaded="false">
-                <figure>
-                    <img data-src="https://picsum.photos/seed/esdrdtyj/500" alt="" />
-                </figure>
-                <div class="bottom-container">
-                    <p>Category</p>
-                    <h3>John Doe</h3>
-                    <p>
-                        Le lorem ipsum est, en imprimerie, une suite de mots sans
-                        signification utilisée à titre provisoire pour calibrer une mise
-                        en page, le texte définitif venant remplacer le faux-texte dès
-                        qu'il est prêt ou que la mise en page est achevée. Généralement,
-                        on utilise un texte en faux latin, le Lorem ipsum ou Lipsum.
-                    </p>
-                </div>
-            </div>
-            <div class="swiper-slide" data-loaded="false">
-                <figure>
-                    <img data-src="https://picsum.photos/seed/aaa/500" alt="" />
-                </figure>
-                <div class="bottom-container">
-                    <p>Category</p>
-                    <h3>John Doe</h3>
-                    <p>
-                        Le lorem ipsum est, en imprimerie, une suite de mots sans
-                        signification utilisée à titre provisoire pour calibrer une mise
-                        en page, le texte définitif venant remplacer le faux-texte dès
-                        qu'il est prêt ou que la mise en page est achevée. Généralement,
-                        on utilise un texte en faux latin, le Lorem ipsum ou Lipsum.
-                    </p>
-                </div>
-            </div>
-            <div class="swiper-slide" data-loaded="false">
-                <figure>
-                    <img data-src="https://picsum.photos/seed/bbb/500" alt="" />
-                </figure>
-                <div class="bottom-container">
-                    <p>Category</p>
-                    <h3>John Doe</h3>
-                    <p>
-                        Le lorem ipsum est, en imprimerie, une suite de mots sans
-                        signification utilisée à titre provisoire pour calibrer une mise
-                        en page, le texte définitif venant remplacer le faux-texte dès
-                        qu'il est prêt ou que la mise en page est achevée. Généralement,
-                        on utilise un texte en faux latin, le Lorem ipsum ou Lipsum.
-                    </p>
-                </div>
-            </div>
-            <div class="swiper-slide" data-loaded="false">
-                <figure>
-                    <img data-src="https://picsum.photos/seed/fdsgsdfg/500" alt="" />
-                </figure>
-                <div class="bottom-container">
-                    <p>Category</p>
-                    <h3>John Doe</h3>
-                    <p>
-                        Le lorem ipsum est, en imprimerie, une suite de mots sans
-                        signification utilisée à titre provisoire pour calibrer une mise
-                        en page, le texte définitif venant remplacer le faux-texte dès
-                        qu'il est prêt ou que la mise en page est achevée. Généralement,
-                        on utilise un texte en faux latin, le Lorem ipsum ou Lipsum.
-                    </p>
-                </div>
-            </div>
-            <div class="swiper-slide" data-loaded="false">
-                <figure>
-                    <img data-src="https://picsum.photos/seed/cxfslhjg/500" alt="" />
-                </figure>
-                <div class="bottom-container">
-                    <p>Category</p>
-                    <h3>John Doe</h3>
-                    <p>
-                        Le lorem ipsum est, en imprimerie, une suite de mots sans
-                        signification utilisée à titre provisoire pour calibrer une mise
-                        en page, le texte définitif venant remplacer le faux-texte dès
-                        qu'il est prêt ou que la mise en page est achevée. Généralement,
-                        on utilise un texte en faux latin, le Lorem ipsum ou Lipsum.
-                    </p>
-                </div>
-            </div>
-            <div class="swiper-slide" data-loaded="false">
-                <figure>
-                    <img data-src="https://picsum.photos/seed/lmjk/500" alt="" />
-                </figure>
-                <div class="bottom-container">
-                    <p>Category</p>
-                    <h3>John Doe</h3>
-                    <p>
-                        Le lorem ipsum est, en imprimerie, une suite de mots sans
-                        signification utilisée à titre provisoire pour calibrer une mise
-                        en page, le texte définitif venant remplacer le faux-texte dès
-                        qu'il est prêt ou que la mise en page est achevée. Généralement,
-                        on utilise un texte en faux latin, le Lorem ipsum ou Lipsum.
-                    </p>
-                </div>
-            </div>
-            <div class="swiper-slide" data-loaded="false">
-                <figure>
-                    <img data-src="https://picsum.photos/seed/dfgdfg/500" alt="" />
-                </figure>
-                <div class="bottom-container">
-                    <p>Category</p>
-                    <h3>John Doe</h3>
-                    <p>
-                        Le lorem ipsum est, en imprimerie, une suite de mots sans
-                        signification utilisée à titre provisoire pour calibrer une mise
-                        en page, le texte définitif venant remplacer le faux-texte dès
-                        qu'il est prêt ou que la mise en page est achevée. Généralement,
-                        on utilise un texte en faux latin, le Lorem ipsum ou Lipsum.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="thumbs-swiper">
-        <div class="swiper-wrapper">
-            <div class="swiper-slide">
-                <figure>
-                    <img data-src="https://picsum.photos/seed/sg/500" alt="" />
-                </figure>
+            <div class="thumbs-swiper">
+                <div class="swiper-wrapper">
+                   <!-- <div class="swiper-slide">
+                        <figure>
+                            <img data-src="https://picsum.photos/seed/sg/500" alt="" />
+                        </figure>
 
-            </div>
-            <div class="swiper-slide">
-                <figure>
-                    <img data-src="https://picsum.photos/seed/dhghza/500" alt="" />
-                </figure>
+                    </div>
+                    <div class="swiper-slide">
+                        <figure>
+                            <img data-src="https://picsum.photos/seed/dhghza/500" alt="" />
+                        </figure>
 
-            </div>
-            <div class="swiper-slide">
-                <figure>
-                    <img data-src="https://picsum.photos/seed/seshj/500" alt="" />
-                </figure>
+                    </div>
+                    <div class="swiper-slide">
+                        <figure>
+                            <img data-src="https://picsum.photos/seed/seshj/500" alt="" />
+                        </figure>
 
-            </div>
-            <div class="swiper-slide">
-                <figure>
-                    <img data-src="https://picsum.photos/seed/esdrdtyj/500" alt="" />
-                </figure>
+                    </div>
+                    <div class="swiper-slide">
+                        <figure>
+                            <img data-src="https://picsum.photos/seed/esdrdtyj/500" alt="" />
+                        </figure>
 
-            </div>
-            <div class="swiper-slide">
-                <figure>
-                    <img data-src="https://picsum.photos/seed/aaa/500" alt="" />
-                </figure>
+                    </div>
+                    <div class="swiper-slide">
+                        <figure>
+                            <img data-src="https://picsum.photos/seed/aaa/500" alt="" />
+                        </figure>
 
-            </div>
-            <div class="swiper-slide">
-                <figure>
-                    <img data-src="https://picsum.photos/seed/bbb/500" alt="" />
-                </figure>
+                    </div> -->
+                    <div class="swiper-slide">
+                        <figure>
+                            <img data-src="https://picsum.photos/seed/bbb/500" alt="" />
+                        </figure>
 
-            </div>
-            <div class="swiper-slide">
-                <figure>
-                    <img data-src="https://picsum.photos/seed/fdsgsdfg/500" alt="" />
-                </figure>
+                    </div>
+                    <div class="swiper-slide">
+                        <figure>
+                            <img data-src="https://picsum.photos/seed/fdsgsdfg/500" alt="" />
+                        </figure>
 
-            </div>
-            <div class="swiper-slide">
-                <figure>
-                    <img data-src="https://picsum.photos/seed/cxfslhjg/500" alt="" />
-                </figure>
+                    </div>
+                    <div class="swiper-slide">
+                        <figure>
+                            <img data-src="https://picsum.photos/seed/cxfslhjg/500" alt="" />
+                        </figure>
 
-            </div>
-            <div class="swiper-slide">
-                <figure>
-                    <img data-src="https://picsum.photos/seed/lmjk/500" alt="" />
-                </figure>
+                    </div>
+                    <div class="swiper-slide">
+                        <figure>
+                            <img data-src="https://picsum.photos/seed/lmjk/500" alt="" />
+                        </figure>
 
-            </div>
-            <div class="swiper-slide">
-                <figure>
-                    <img data-src="https://picsum.photos/seed/dfgdfg/500" alt="" />
-                </figure>
+                    </div>
+                    <div class="swiper-slide">
+                        <figure>
+                            <img data-src="https://picsum.photos/seed/dfgdfg/500" alt="" />
+                        </figure>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

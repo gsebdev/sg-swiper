@@ -4,8 +4,28 @@
 body {
     margin: 0;
 }
+
+.panel {
+    width: 20%;
+    height: 100vh;
+    padding: 10px;
+    box-shadow: 3px 0px 5px 1px rgba(0,0,0,0.1);
+    position: fixed;
+    top: 0; 
+    left: 0;
+    z-index: 10;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: end;
+}
+.content {
+    width: 100%;
+    padding-left: 20%;
+}
+
 .swiper-demo {
-    width: 100vw;
+    width: 100%;
     /*max-width: 1280px;*/
     overflow: hidden;
     padding: 20px 0;
@@ -18,7 +38,7 @@ body {
 
 }
 .thumbs-swiper {
-    width: 100vw;
+    width: 100%;
     /*max-width: 1024px;*/
     overflow: hidden;
     padding: 20px 0;
@@ -65,18 +85,19 @@ body {
     transform: translateX(-50%);
 }
 .swiper-wrapper {
-    display: flex;
-    flex-wrap: nowrap;
-    height: 100%;
+    display: grid;
+    grid-auto-columns: auto;
+    grid-auto-flow: column ;
     column-gap: 20px;
+    padding: 0 20px;
+    width: fit-content;
 }
 .thumbs-swiper .swiper-wrapper {
     column-gap: 8px;
 }
 .swiper-slide {
     position: relative;
-    flex: 0 0 30%;
-    max-width: 400px;
+    width: 360px;
     height: auto;
     border-radius: 20px;
     overflow: hidden;
@@ -84,8 +105,7 @@ body {
     box-shadow: 2px 2px 5px 0px rgba(0,0,0,0.1);
 }
 .thumbs-swiper .swiper-slide{
-   flex: 0 0 15%;
-   max-width: 150px;
+   width: 150px;
 }
 .swiper-slide figure {
     position: relative;
@@ -148,6 +168,25 @@ body {
         border: none;
     }
 }
+@media screen and (max-width: 768px) {
+    .panel {
+        width: 100%;
+        height: auto;
+        box-shadow: 0px 3px 5px 1px rgba(0,0,0,0.1);
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 15px;
+        position: sticky;
+        margin-bottom: 20px;
+    }
+    .content {
+        padding-left: 0;
+    }
+    .swiper-slide {     
+        width: 45vw;
+    }
+}
 @media screen and (max-width: 576px) {
     .swiper-slide .bottom-container p:first-child {
         font-size: 0.85rem;
@@ -164,12 +203,13 @@ body {
         font-size: 0.85rem;
     }
     .swiper-slide {     
-        flex: 0 0 80%;
+        width: 80vw;
     }
     .thumbs-swiper .swiper-slide{
-       flex: 0 0 35%;
+       width: 30vw;
     }
 }
+
 
 @keyframes spin {
     from {

@@ -17,7 +17,9 @@ interface SwiperState {
     currentPosition: number;
     initialized: boolean;
     swiperWidth: number;
+    slidesWrapperWidth: number;
     slidesLoaded: boolean;
+    fixedTranslate: boolean | number;
 }
 
 interface SwiperSlide {
@@ -48,6 +50,7 @@ interface SwiperArgs {
     linkedSwipers?: SwiperInterface[];
     slideStart?: number;
     draggable?: boolean;
+    limitToEdges?: boolean;
 }
 
 declare class Swiper implements SwiperInterface {
@@ -64,6 +67,7 @@ declare class Swiper implements SwiperInterface {
     _slides: SwiperSlide[];
     _slideCount: number;
     _draggable: boolean;
+    _limitToEdges: boolean;
     _slideLoad: ((slide: HTMLElement) => Promise<void>) | null;
     _slideClick: ((index: number, element: HTMLElement) => void) | null;
     _eventListeners: [
