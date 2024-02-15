@@ -28,6 +28,16 @@ const initSwipers = () => {
         limitToEdges: limitToEdges,
       }
     );
+
+      document.querySelectorAll(".swiper-nav").forEach((el) => {
+        if(navigation) {
+          (el as HTMLElement).style.display = "";
+        } else {
+           (el as HTMLElement).style.display = "none";
+        }
+       
+      })
+
     const swiper = new Swiper(
       document.querySelector(".swiper-demo") as HTMLElement,
       {
@@ -56,7 +66,7 @@ const initSwipers = () => {
             }
           : undefined,
         slideStart: 0,
-        auto: auto ? 3000 : undefined,
+        auto: auto ? 1500 : undefined,
         onSlideChange: handleChangeSlide,
         slideLoad: slideLoad,
         linkedSwipers: linkedswiper ? [thumnailSwiper] : undefined,

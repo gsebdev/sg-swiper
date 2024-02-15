@@ -1,225 +1,232 @@
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 body {
-    margin: 0;
+  margin: 0;
 }
 
 .panel {
-    width: 20%;
-    height: 100vh;
-    padding: 10px;
-    box-shadow: 3px 0px 5px 1px rgba(0,0,0,0.1);
-    position: fixed;
-    top: 0; 
-    left: 0;
-    z-index: 10;
-    background-color: white;
-    display: flex;
-    flex-direction: column;
-    align-items: end;
+  width: 20%;
+  height: 100vh;
+  padding: 10px;
+  box-shadow: 3px 0px 5px 1px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: end;
 }
+
 .content {
-    width: 100%;
-    padding-left: 20%;
+  width: 100%;
+  padding-left: 20%;
 }
 
 .swiper-demo {
-    width: 100%;
-    /*max-width: 1280px;*/
-    overflow: hidden;
-    padding: 20px 0;
-    position: relative;
-    cursor: grab;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0 auto;
-    /*border: 1px dashed rgb(255, 111, 111);*/
-    user-select: none;
-
+  width: 100%;
+  /*max-width: 1280px;*/
+  overflow: hidden;
+  padding: 20px;
+  position: relative;
+  cursor: grab;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0 auto;
+  /*border: 1px dashed rgb(255, 111, 111);*/
+  user-select: none;
+}
+.swiper-demo.is-first .swiper-nav[data-direction="prev"] {
+  display: none;
+}
+.swiper-demo.is-last .swiper-nav[data-direction="next"] {
+  display: none;
 }
 .thumbs-swiper {
-    width: 100%;
-    /*max-width: 1024px;*/
-    overflow: hidden;
-    padding: 20px 0;
-    position: relative;
-    cursor: grab;
-    margin: 5px auto;
-    /*border: 1px dashed rgb(255, 111, 111);*/
+  width: 100%;
+  /*max-width: 1024px;*/
+  overflow: hidden;
+  padding: 20px;
+  position: relative;
+  cursor: grab;
+  margin: 5px auto;
+  /*border: 1px dashed rgb(255, 111, 111);*/
 }
 .no-translate .swiper-wrapper {
-    justify-content: center;
+  justify-content: center;
 }
 .swiper-nav {
-    position: absolute;
-    width: 10%;
-    height: 100%;
-    top: 0;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    color: rgb(0, 94, 160);
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
-    z-index: 2;
+  position: absolute;
+  width: 10%;
+  height: 100%;
+  top: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: rgb(0, 94, 160);
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  z-index: 2;
 }
 .swiper-demo:hover .swiper-nav {
-    opacity: 1;
+  opacity: 1;
 }
-.swiper-nav[data-direction=prev] {
-    justify-content: start;
-    left: 0;
+.swiper-nav[data-direction="prev"] {
+  justify-content: start;
+  left: 0;
 }
-.swiper-nav[data-direction=next] {
-    justify-content: end;
-    right: 0;
+.swiper-nav[data-direction="next"] {
+  justify-content: end;
+  right: 0;
 }
 .swiper-nav svg {
-    width: 50px;
-    height: 50px;
-    object-fit: contain;
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
 }
 .swiper-demo::before {
-    content: '';
-    position: absolute;
-    height: 100%; 
-    left: 50%; 
-    top: 0;
-    transform: translateX(-50%);
+  content: "";
+  position: absolute;
+  height: 100%;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
 }
 .swiper-wrapper {
-    display: flex;
-    flex-wrap: nowrap;
-    column-gap: 20px;
-    padding: 0 20px;
+  display: flex;
+  flex-wrap: nowrap;
+  column-gap: 20px;
 }
 .thumbs-swiper .swiper-wrapper {
-    column-gap: 8px;
+  column-gap: 8px;
 }
 .swiper-slide {
-    position: relative;
-    flex: 0 0 25%;
-    max-width: 360px;
-    height: auto;
-    border-radius: 20px;
-    overflow: hidden;
-    border: 1px lightgrey solid;
-    box-shadow: 2px 2px 5px 0px rgba(0,0,0,0.1);
+  position: relative;
+  flex: 0 0 25%;
+  max-width: 360px;
+  height: auto;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px lightgrey solid;
+  box-shadow: 2px 2px 5px 0px rgba(0, 0, 0, 0.1);
 }
-.thumbs-swiper .swiper-slide{
-   flex: 0 0 150px;
-   max-width: 150px;
+.thumbs-swiper .swiper-slide {
+  flex: 0 0 150px;
+  max-width: 150px;
 }
 .swiper-slide figure {
-    position: relative;
-    aspect-ratio: 4 / 3;
-    width: 100%;
-    background-color: lightgrey;
-    margin: 0;
+  position: relative;
+  aspect-ratio: 4 / 3;
+  width: 100%;
+  background-color: lightgrey;
+  margin: 0;
 }
 .thumbs-swiper .swiper-slide figure {
-    aspect-ratio: 1 / 1;
+  aspect-ratio: 1 / 1;
 }
 .swiper-slide figure img {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    transition: opacity 0.3s ease-in-out;
-    opacity: 1;
-    object-fit: cover;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transition: opacity 0.3s ease-in-out;
+  opacity: 1;
+  object-fit: cover;
 }
 .swiper-slide .bottom-container {
-    aspect-ratio: 3 / 2;
-    width: 100%;
-    background-color: white;
-    padding: 1rem;
-    box-sizing: border-box;
+  aspect-ratio: 3 / 2;
+  width: 100%;
+  background-color: white;
+  padding: 1rem;
+  box-sizing: border-box;
 }
 .swiper-slide .bottom-container p:first-child {
-    text-transform: uppercase;
-    font-size: 0.9rem;
-    color: rgb(0, 94, 144);
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  color: rgb(0, 94, 144);
 }
 .swiper-slide .bottom-container h3 {
+  text-transform: uppercase;
+  font-size: 1.65rem;
+  color: rgb(48, 48, 48);
+  margin: 5px 0;
+}
+.swiper-slide .bottom-container p:last-child {
+  font-size: 1rem;
+  color: rgb(93, 93, 93);
+}
+.swiper-slide[data-loaded="false"] figure {
+  display: grid;
+  place-items: center;
+}
+.swiper-slide[data-loaded="false"] figure::before {
+  content: "";
+  height: 50px;
+  width: 50px;
+  border-radius: 50%;
+  border: 2px solid grey;
+  border-top-color: transparent;
+  animation: spin 1s ease-in-out infinite both;
+}
+.swiper-slide[data-loaded="false"] figure img {
+  opacity: 0;
+}
+@media screen and (max-width: 1280px) {
+  .swiper-demo {
+    border: none;
+  }
+}
+@media screen and (max-width: 768px) {
+  .panel h1 {
+    margin: 5px 0;
+    font-size: 1.5rem;
+  }
+  .panel {
+    width: 100%;
+    height: auto;
+    box-shadow: 0px 3px 5px 1px rgba(0, 0, 0, 0.1);
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 15px;
+    position: relative;
+    margin-bottom: 20px;
+  }
+  .content {
+    padding-left: 0;
+  }
+  .swiper-slide {
+    flex-basis: 45%;
+  }
+}
+@media screen and (max-width: 576px) {
+  .swiper-slide .bottom-container p:first-child {
+    font-size: 0.85rem;
+    margin: 5px 0;
+  }
+  .swiper-slide .bottom-container h3 {
     text-transform: uppercase;
     font-size: 1.65rem;
     color: rgb(48, 48, 48);
-    margin: 5px 0
+    margin: 5px 0;
+  }
+  .swiper-slide .bottom-container p:last-child {
+    margin: 5px 0;
+    font-size: 0.85rem;
+  }
+  .swiper-slide {
+    flex: 0 0 80%;
+  }
+  .thumbs-swiper .swiper-slide {
+    flex: 0 0 30%;
+  }
 }
-.swiper-slide .bottom-container p:last-child {
-    font-size: 1rem;
-    color: rgb(93, 93, 93);
-}
-.swiper-slide[data-loaded=false] figure {
-    display: grid;
-    place-items: center;
-}
-.swiper-slide[data-loaded=false] figure::before {
-    content: '';
-    height: 50px;
-    width: 50px;
-    border-radius: 50%;
-    border: 2px solid grey;
-    border-top-color: transparent;
-    animation: spin 1s ease-in-out infinite both;
-}
-.swiper-slide[data-loaded=false] figure img {
-    opacity: 0;
-}
-@media screen and (max-width: 1280px) {
-    .swiper-demo {
-        border: none;
-    }
-}
-@media screen and (max-width: 768px) {
-    .panel {
-        width: 100%;
-        height: auto;
-        box-shadow: 0px 3px 5px 1px rgba(0,0,0,0.1);
-        flex-direction: row;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 15px;
-        position: sticky;
-        margin-bottom: 20px;
-    }
-    .content {
-        padding-left: 0;
-    }
-    .swiper-slide {     
-        flex-basis: 45%;
-    }
-}
-@media screen and (max-width: 576px) {
-    .swiper-slide .bottom-container p:first-child {
-        font-size: 0.85rem;
-        margin: 5px 0;
-    }
-    .swiper-slide .bottom-container h3 {
-        text-transform: uppercase;
-        font-size: 1.65rem;
-        color: rgb(48, 48, 48);
-        margin: 5px 0
-    }
-    .swiper-slide .bottom-container p:last-child {
-        margin: 5px 0;
-        font-size: 0.85rem;
-    }
-    .swiper-slide {     
-        flex: 0 0 80%;
-    }
-    .thumbs-swiper .swiper-slide{
-       flex: 0 0 30%;
-    }
-}
-
 
 @keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-    
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
