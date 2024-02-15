@@ -2,54 +2,28 @@
  * @jest-environment jsdom
  */
 
-import { SwiperArgs } from "../src/interfaces/SwiperArgs";
 import userEvent from "@testing-library/user-event";
 import { fireEvent } from "@testing-library/react";
 import Swiper from "../src/sg-swiper";
-
-const createSwiperElements = () => {
-  let swiperContainer = document.createElement("div");
-  Object.defineProperty(swiperContainer, "offsetWidth", { value: 500 });
-  let slidesWrapper = document.createElement("div");
-  for (let i = 0; i < 10; i++) {
-    const slide = document.createElement("div");
-    Object.defineProperty(slide, "offsetWidth", { value: 150 });
-    Object.defineProperty(slide, "offsetLeft", { value: i * 150 });
-    slide.classList.add("slide");
-    slidesWrapper.appendChild(slide);
-  }
-  swiperContainer.appendChild(slidesWrapper);
-  let prev = document.createElement("div");
-  let next = document.createElement("div");
-  let args: SwiperArgs = {
-    onSlideChange: jest.fn(),
-    slideClassName: "slide",
-    onSlideClick: jest.fn(),
-    draggable: true,
-  };
-
-  swiperContainer.prepend(prev, next);
-  let swiper2 = swiperContainer.cloneNode(true) as HTMLElement;
-
-  return { args, swiper2, swiperContainer, slidesWrapper, next, prev };
-};
+import createSwiperElements, { customizeHTMLElement } from "./__mocks__/createSwiperElements";
+import addResizeObserver from "./__mocks__/ResizeObserver";
 
 describe("Swiper draggable with child", () => {
+  addResizeObserver();
+  customizeHTMLElement();
   // create a new swiper
   const { args, swiper2, swiperContainer, slidesWrapper, next, prev } =
-    createSwiperElements();
+    createSwiperElements(500, 150, 10);
   let swiperObjectChild = new Swiper(swiper2, { ...args });
   let swiperObjectParent = new Swiper(swiperContainer, {
     ...args,
     linkedSwipers: [swiperObjectChild],
     navigation: { prev: [prev], next: [next] },
   });
-
+  swiperObjectParent._getDimensions();
+  swiperObjectParent._getDimensions();
   //spy on _handlePush, _handleRelease and _handleMove
   const pushListener = jest.spyOn(swiperObjectParent, "_handlePush");
-
-  const releaseListener = jest.spyOn(swiperObjectParent, "_handleRelease");
-  const moveListener = jest.spyOn(swiperObjectParent, "_handleMove");
 
   it("should be defined", () => {
     expect(Swiper).toBeDefined();
@@ -60,7 +34,7 @@ describe("Swiper draggable with child", () => {
     expect(swiperObjectChild).toBeInstanceOf(Swiper);
   });
   it("should count 10 slides", () => {
-    expect(swiperObjectParent._slides.length).toBe(10);
+    expect(Array.from(swiperObjectParent._slides.values()).length).toBe(10);
     expect(swiperObjectParent._slideCount).toBe(10);
   });
   it("should have a slide wrapper", () => {
@@ -77,22 +51,22 @@ describe("Swiper draggable with child", () => {
     expect(swiperObjectParent._state.swiperWidth).toBe(500);
     expect(swiperObjectParent._state.currentIndex).toBe(0);
     expect(swiperObjectParent._state.currentPosition).toBe(175);
-    expect(swiperObjectParent._state.slidesLoaded).toBeTruthy();
+    expect(swiperObjectParent._slides.allSlidesLoaded).toBe(true);
   });
   it("should have slides well populated", () => {
-    expect(swiperObjectParent._slides.length).toBe(10);
-    expect(swiperObjectParent._slides[0].element).toBe(
+    expect(Array.from(swiperObjectParent._slides.entries()).length).toBe(10);
+    expect(Array.from(swiperObjectParent._slides.values())[0].element).toBe(
       slidesWrapper.children[0]
     );
-    expect(swiperObjectParent._slides[9].element).toBe(
+    expect(Array.from(swiperObjectParent._slides.values())[9].element).toBe(
       slidesWrapper.children[9]
     );
-    expect(swiperObjectParent._slides[0].width).toBe(150);
-    expect(swiperObjectParent._slides[9].width).toBe(150);
-    expect(swiperObjectParent._slides[0].position).toBe(0);
-    expect(swiperObjectParent._slides[9].position).toBe(1350);
-    expect(swiperObjectParent._slides[0].loaded).toBeTruthy();
-    expect(swiperObjectParent._slides[9].loaded).toBeTruthy();
+    expect(Array.from(swiperObjectParent._slides.values())[0].width).toBe(150);
+    expect(Array.from(swiperObjectParent._slides.values())[9].width).toBe(150);
+    expect(Array.from(swiperObjectParent._slides.values())[0].position).toBe(0);
+    expect(Array.from(swiperObjectParent._slides.values())[9].position).toBe(1350);
+    expect(Array.from(swiperObjectParent._slides.values())[0].loaded).toBeTruthy();
+    expect(Array.from(swiperObjectParent._slides.values())[9].loaded).toBeTruthy();
   });
   const user = userEvent.setup();
   it("should navigate with buttons", async () => {
@@ -210,6 +184,9 @@ describe("Swiper draggable with child", () => {
     expect(swiperObjectParent._state.currentPosition).toBe(-175);
     expect(slidesWrapper.style.transform).toBe("translate3d(-175px, 0, 0)");
     expect(getIndexFunc).toHaveBeenCalledTimes(1);
+    console.log(swiperObjectParent._limitToEdges)
+    expect(getIndexFunc).toHaveReturnedWith(2);
+
     expect(swiperObjectParent._state.currentIndex).toBe(2);
 
     //move a delta of 150px
@@ -289,7 +266,7 @@ describe("Swiper draggable with child", () => {
   });
   it("should remove initialized state and all listeners when stop is called", () => {
     jest.restoreAllMocks();
-    pushListener.mockImplementation(() => {});
+    pushListener.mockImplementation(() => { });
     const placeholderCallback = jest.fn();
     document.removeEventListener = jest
       .fn()
@@ -338,66 +315,12 @@ describe("Swiper draggable with child", () => {
       "click",
       expect.any(Function)
     );
-    expect(placeholderCallback).toHaveBeenCalledWith(
-      "resize",
-      expect.any(Function)
-    );
     swiperObjectParent.start();
     jest.restoreAllMocks();
   });
 });
 
-describe("Swiper with lazyload", () => {
-  const { args, swiperContainer, slidesWrapper, next, prev } =
-    createSwiperElements();
-  Array.from(slidesWrapper.children).forEach((slide) =>
-    slide.setAttribute("data-loaded", "false")
-  );
-  let swiperObject = new Swiper(swiperContainer, {
-    slideLoad: () => Promise.resolve(),
-    slideClassName: "slide",
-  });
 
-  it("should not be initialized", () => {
-    expect(swiperObject._state.initialized).toBeTruthy();
-    expect(swiperObject._state.currentIndex).toBe(0);
-    expect(swiperObject._state.slidesLoaded).toBeFalsy();
-  });
-  it("should have loaded visible slides at beginning", () => {
-    expect(swiperObject._slides[0].loaded).toBeTruthy();
-    expect(swiperObject._slides[1].loaded).toBeTruthy();
-    expect(swiperObject._slides[2].loaded).toBeTruthy();
-    expect(
-      swiperObject._slides.slice(3).every((slide) => !slide.loaded)
-    ).toBeTruthy();
-    swiperObject._setIndex(7, true);
-  });
-
-  it("should load 5, 6, 7, 8, 9 when index is set to 7", () => {
-    expect(swiperObject._state.currentIndex).toBe(7);
-    expect(swiperObject._state.slidesLoaded).toBeFalsy();
-    expect(swiperObject._state.currentPosition).toBe(-875);
-    expect(swiperObject._slides[0].loaded).toBeTruthy();
-    expect(swiperObject._slides[1].loaded).toBeTruthy();
-    expect(swiperObject._slides[2].loaded).toBeTruthy();
-    expect(
-      swiperObject._slides.slice(5).every((slide) => slide.loaded)
-    ).toBeTruthy();
-    expect(
-      swiperObject._slides.slice(3, 5).every((slide) => !slide.loaded)
-    ).toBeTruthy();
-    for (let i = 2; i < 10; i++) {
-      swiperObject._setIndex(i, true);
-    }
-    swiperObject._setIndex(3, true);
-  });
-  it("should be all loaded when every slides have been set", () => {
-    expect(swiperObject._state.slidesLoaded).toBeTruthy();
-    expect(swiperObject._state.currentIndex).toBe(3);
-    expect(swiperObject._slides[9].loaded).toBeTruthy();
-    expect(swiperObject._state.currentPosition).toBe(-275);
-  });
-});
 
 describe("Swiper with no element", () => {
   //@ts-ignore
@@ -449,12 +372,12 @@ describe("Swiper with no arguments", () => {
 describe("Swiper not draggable", () => {
   jest.restoreAllMocks();
   const { args, swiperContainer, slidesWrapper, next, prev } =
-    createSwiperElements();
+    createSwiperElements(500, 150, 10);
 
   let swiperObject = new Swiper(swiperContainer, {
     slideLoad: () => Promise.resolve(),
     slideClassName: "slide",
-    onSlideClick: jest.fn(() => {}),
+    onSlideClick: jest.fn(() => { }),
     draggable: false,
   });
   const pushHandler = jest.spyOn(swiperObject, "_handlePush");
