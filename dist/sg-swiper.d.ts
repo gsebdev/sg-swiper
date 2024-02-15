@@ -1,3 +1,44 @@
+interface SwiperSlide {
+    index: number;
+    element: HTMLElement;
+    position: number;
+    width: number;
+    loaded: boolean;
+}
+interface NavigationElements {
+    next?: HTMLElement[] | null;
+    prev?: HTMLElement[] | null;
+}
+interface SwiperInterface {
+    start(index?: number): void;
+    stop(): void;
+    index: number;
+    slideClick?: (index: number, element: HTMLElement) => void;
+}
+
+declare class SlideMap extends Map<string, SwiperSlide> {
+    _allSlidesLoaded: boolean;
+    _firstKey: string | undefined;
+    _lastKey: string | undefined;
+    /**
+   * Retrieves the slide given the index position.
+   */
+    getSlideByIndex: (index: number) => [string, SwiperSlide] | null;
+    getSlidesScrollWidth: () => number;
+    updateSlideDimensions: (id: string, args?: {
+        width?: number;
+        position?: number;
+    }) => void;
+    set(id: string, slide: SwiperSlide): this;
+    delete(key: string): boolean;
+    /**
+     * getter to know if all slides are loaded.
+     */
+    get allSlidesLoaded(): boolean;
+    get last(): SwiperSlide | undefined;
+    get first(): SwiperSlide | undefined;
+}
+
 interface SwipeSession {
     active: boolean;
     type: "mouse" | "touch";
@@ -18,26 +59,7 @@ interface SwiperState {
     initialized: boolean;
     swiperWidth: number;
     slidesScrollWidth: number;
-    slidesLoaded: boolean;
     noTranslate: boolean;
-}
-
-interface SwiperSlide {
-    element: HTMLElement;
-    id: string;
-    position: number;
-    width: number;
-    loaded: boolean;
-}
-interface NavigationElements {
-    next?: HTMLElement[] | null;
-    prev?: HTMLElement[] | null;
-}
-interface SwiperInterface {
-    start(index?: number): void;
-    stop(): void;
-    index: number;
-    slideClick?: (index: number, element: HTMLElement) => void;
 }
 
 interface SwiperArgs {
@@ -57,6 +79,8 @@ declare class Swiper implements SwiperInterface {
     _state: SwiperState;
     _swipeSession: SwipeSession;
     _indexChangeCallback: ((index: number) => void) | null;
+    _resizeObserver: ResizeObserver | null;
+    _getDimensionsTimeout: NodeJS.Timeout | undefined;
     _navigationElements: NavigationElements;
     _childrenSwipers: SwiperInterface[] | null;
     _slideClassName: string | null;
@@ -64,7 +88,7 @@ declare class Swiper implements SwiperInterface {
     _slidesWrapper: HTMLElement | null;
     _auto: number | null;
     _autoInterval: NodeJS.Timeout | undefined;
-    _slides: SwiperSlide[];
+    _slides: SlideMap;
     _slideCount: number;
     _draggable: boolean;
     _limitToEdges: boolean;
@@ -117,6 +141,7 @@ declare class Swiper implements SwiperInterface {
      * @param {number} index - the index of the slide
      */
     _handleSlideClick: (e: Event, element: HTMLElement, index: number) => void;
+    _handleResize: (entries: ResizeObserverEntry[]) => void;
     /**
      * Update dimensions and positions of slides
      */
@@ -159,14 +184,12 @@ declare class Swiper implements SwiperInterface {
      * @param {boolean} translate - Optional flag to perform translation. Defaults to true.
      */
     _setIndex: (index: number, translate?: boolean) => void;
+    _setFirstClassNames(): void;
+    _setLastClassNames(): void;
     /**
      * Retrieves the active index based on the given position.
      */
     _getIndexByPosition: (translate: number) => number;
-    /**
-     * Check if all slides are loaded.
-     */
-    _checkIfAllLoaded: () => void;
     get index(): number;
     set index(index: number);
     /**

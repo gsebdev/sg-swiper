@@ -4,6 +4,5 @@ export interface SwiperState {
   initialized: boolean;
   swiperWidth: number;
   slidesScrollWidth: number;
-  slidesLoaded: boolean;
   noTranslate: boolean;
 }

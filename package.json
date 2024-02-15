@@ -1,6 +1,6 @@
 {
   "name": "sg-swiper",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "a lightweighttypescript responsive slides swiper",
   "main": "./dist/sg-swiper.js",
   "module": "./dist/sg-swiper.mjs",

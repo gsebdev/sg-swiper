@@ -2,8 +2,8 @@ import { SwipeSession } from "./SwipeSession";
 import { SwiperState } from "./SwipeState";
 
 export interface SwiperSlide {
+  index: number;
   element: HTMLElement;
-  id: string;
   position: number;
   width: number;
   loaded: boolean;
