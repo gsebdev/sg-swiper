@@ -54,7 +54,7 @@ export default class Swiper implements SwiperInterface {
     string,
     (e: Event) => void,
     { capture?: boolean, passive?: boolean }?
-  ][];
+  ][] = [];
   _activeSessionEventListeners: {
     mouse: [keyof DocumentEventMap, (e: MouseEvent | TouchEvent) => void][];
     touch: [keyof DocumentEventMap, (e: MouseEvent | TouchEvent) => void][];
@@ -134,10 +134,20 @@ export default class Swiper implements SwiperInterface {
         ["touchcancel", this._handleRelease],
       ],
     };
-    // add the event listeners
-    this._eventListeners = [
-      [this._swiperElement, "mouseover", this._handleHover.bind(this), { passive: true }],
-    ];
+    // add the auto event listeners
+    if(this._auto && this._auto > 1000 ) {
+      this._eventListeners.push(
+        [this._swiperElement, "mouseover", this._handleHover.bind(this), { passive: true }],
+        [this._swiperElement, "mouseout", this._handleLeave.bind(this), { passive: true }]
+      );
+      this._childrenSwipers?.forEach((swiper) => {
+        if(!swiper.container) return;
+        this._eventListeners.push(
+          [swiper.container, "mouseover", this._handleHover.bind(this), { passive: true }],
+          [swiper.container, "mouseout", this._handleLeave.bind(this), { passive: true }]
+        );
+      });
+    }
 
     // add the draggable event listeners
     if (this._draggable) {
@@ -195,13 +205,8 @@ export default class Swiper implements SwiperInterface {
       this._setIndex(index ?? 0);
 
       // set the auto slide interval if provided
-      if (this._auto) {
-        this._autoInterval = setInterval(() => {
-          const [, slide] = this._slides.getSlideByIndex(this._state?.currentIndex) ?? [];
-          if (slide?.loaded) {
-            this._handleNextClick();
-          }
-        }, this._auto);
+      if (this._auto && this._auto > 1000) {
+        this._handleLeave();
       }
     }
   }
@@ -211,7 +216,29 @@ export default class Swiper implements SwiperInterface {
    */
   _handleHover = () => {
     clearInterval(this._autoInterval);
+
   }
+  /**
+   * A function to handle hover behavior.
+   */
+  _handleLeave = () => {
+    if(!this._auto) return;
+    
+    clearInterval(this._autoInterval);
+    
+    this._autoInterval = setInterval(() => {
+      const [, slide] = this._slides.getSlideByIndex(this._state?.currentIndex) ?? [];
+      if (slide?.loaded) {
+        this._handleNextClick();
+      }
+    }, this._auto);
+  }
+
+  /**
+   * A function to prevent the default behavior of the event.
+   *
+   * @param {Event} e - the event
+   */
   _preventDefault = (e: Event) => {
     e.preventDefault();
   }
@@ -646,6 +673,10 @@ export default class Swiper implements SwiperInterface {
 
   get index() {
     return this._state.currentIndex;
+  }
+
+  get container() {
+    return this._swiperElement;
   }
 
   set index(index) {

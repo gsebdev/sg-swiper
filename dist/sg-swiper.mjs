@@ -122,7 +122,7 @@ var Swiper = class {
   _limitToEdges = false;
   _slideLoad = null;
   _slideClick = null;
-  _eventListeners;
+  _eventListeners = [];
   _activeSessionEventListeners;
   /**
   * Constructor for the Swiper class.
@@ -131,7 +131,7 @@ var Swiper = class {
   * @param {SwiperArgs} args - optional arguments to configure the Swiper
   */
   constructor(element, args = null) {
-    var _a;
+    var _a, _b;
     if (!element) {
       console.error("Cannot initialize Swiper: no element provided.");
       return;
@@ -180,9 +180,20 @@ var Swiper = class {
         ["touchcancel", this._handleRelease]
       ]
     };
-    this._eventListeners = [
-      [this._swiperElement, "mouseover", this._handleHover.bind(this), { passive: true }]
-    ];
+    if (this._auto && this._auto > 1e3) {
+      this._eventListeners.push(
+        [this._swiperElement, "mouseover", this._handleHover.bind(this), { passive: true }],
+        [this._swiperElement, "mouseout", this._handleLeave.bind(this), { passive: true }]
+      );
+      (_b = this._childrenSwipers) == null ? void 0 : _b.forEach((swiper) => {
+        if (!swiper.container)
+          return;
+        this._eventListeners.push(
+          [swiper.container, "mouseover", this._handleHover.bind(this), { passive: true }],
+          [swiper.container, "mouseout", this._handleLeave.bind(this), { passive: true }]
+        );
+      });
+    }
     if (this._draggable) {
       this._eventListeners.push(
         //@ts-ignore
@@ -223,14 +234,8 @@ var Swiper = class {
       this._state.swiperWidth = this._swiperElement.clientWidth;
       this._state.initialized = true;
       this._setIndex(index ?? 0);
-      if (this._auto) {
-        this._autoInterval = setInterval(() => {
-          var _a2;
-          const [, slide] = this._slides.getSlideByIndex((_a2 = this._state) == null ? void 0 : _a2.currentIndex) ?? [];
-          if (slide == null ? void 0 : slide.loaded) {
-            this._handleNextClick();
-          }
-        }, this._auto);
+      if (this._auto && this._auto > 1e3) {
+        this._handleLeave();
       }
     }
   };
@@ -240,6 +245,26 @@ var Swiper = class {
   _handleHover = () => {
     clearInterval(this._autoInterval);
   };
+  /**
+   * A function to handle hover behavior.
+   */
+  _handleLeave = () => {
+    if (!this._auto)
+      return;
+    clearInterval(this._autoInterval);
+    this._autoInterval = setInterval(() => {
+      var _a;
+      const [, slide] = this._slides.getSlideByIndex((_a = this._state) == null ? void 0 : _a.currentIndex) ?? [];
+      if (slide == null ? void 0 : slide.loaded) {
+        this._handleNextClick();
+      }
+    }, this._auto);
+  };
+  /**
+   * A function to prevent the default behavior of the event.
+   *
+   * @param {Event} e - the event
+   */
   _preventDefault = (e) => {
     e.preventDefault();
   };
@@ -583,6 +608,9 @@ var Swiper = class {
   };
   get index() {
     return this._state.currentIndex;
+  }
+  get container() {
+    return this._swiperElement;
   }
   set index(index) {
     this._setIndex(index);

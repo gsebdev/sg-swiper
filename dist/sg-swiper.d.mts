@@ -13,6 +13,7 @@ interface SwiperInterface {
     start(index?: number): void;
     stop(): void;
     index: number | null | undefined;
+    container: HTMLElement | null | undefined;
     slideClick?: (index: number, element: HTMLElement) => void;
 }
 
@@ -124,6 +125,15 @@ declare class Swiper implements SwiperInterface {
      * A function to handle hover behavior.
      */
     _handleHover: () => void;
+    /**
+     * A function to handle hover behavior.
+     */
+    _handleLeave: () => void;
+    /**
+     * A function to prevent the default behavior of the event.
+     *
+     * @param {Event} e - the event
+     */
     _preventDefault: (e: Event) => void;
     /**
     * Handles the click event for the previous button.
@@ -192,6 +202,7 @@ declare class Swiper implements SwiperInterface {
      */
     _getIndexByPosition: (translate: number) => number | undefined;
     get index(): number;
+    get container(): HTMLElement;
     set index(index: number);
     /**
      * setter for slide click callback
