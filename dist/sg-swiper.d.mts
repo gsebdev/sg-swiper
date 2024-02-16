@@ -184,6 +184,7 @@ declare class Swiper implements SwiperInterface {
      * @param {boolean} translate - Optional flag to perform translation. Defaults to true.
      */
     _setIndex: (index: number, translate?: boolean) => void;
+    _clearPositionClassNames(): void;
     _setFirstClassNames(): void;
     _setLastClassNames(): void;
     /**

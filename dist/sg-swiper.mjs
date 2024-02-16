@@ -279,7 +279,7 @@ var Swiper = class {
         });
       }
     }
-    this._getDimensionsTimeout = setTimeout(this._getDimensions, 100);
+    this._getDimensionsTimeout = setTimeout(this._getDimensions, 75);
   };
   /**
    * Update dimensions and positions of slides
@@ -298,7 +298,7 @@ var Swiper = class {
     } else {
       state.noTranslate = false;
       swiper == null ? void 0 : swiper.classList.remove("no-translate");
-      this._setIndex(state.currentIndex);
+      this._setIndex(this._getIndexByPosition(state.currentPosition));
     }
   };
   /**
@@ -451,7 +451,7 @@ var Swiper = class {
     const [, activeSlide] = this._slides.getSlideByIndex(index) ?? [];
     const [, lastActiveSlide] = this._slides.getSlideByIndex(currentIndex) ?? [];
     if (!activeSlide) {
-      console.error("no active slide");
+      console.error("no active slide", index);
       return;
     }
     if (!this._slides.allSlidesLoaded && this._slideLoad) {
@@ -497,6 +497,7 @@ var Swiper = class {
         const [, lastSlide] = this._slides.getSlideByIndex(this._slideCount - 1) ?? [];
         const stickToStart = firstSlide && value > -1 * firstSlide.width / 2 ? true : false;
         const stickToEnd = lastSlide && value < limit + lastSlide.width / 2 ? true : false;
+        this._clearPositionClassNames();
         if (stickToEnd && stickToStart) {
           if (currentPosition < value) {
             value = limit;
@@ -535,6 +536,11 @@ var Swiper = class {
       });
     }
   };
+  _clearPositionClassNames() {
+    var _a, _b;
+    (_a = this._swiperElement) == null ? void 0 : _a.classList.remove("is-first");
+    (_b = this._swiperElement) == null ? void 0 : _b.classList.remove("is-last");
+  }
   _setFirstClassNames() {
     var _a, _b;
     (_a = this._swiperElement) == null ? void 0 : _a.classList.remove("is-last");
@@ -549,11 +555,10 @@ var Swiper = class {
    * Retrieves the active index based on the given position.
    */
   _getIndexByPosition = (translate) => {
-    const { swiperWidth, slidesScrollWidth } = this._state;
+    const { swiperWidth, slidesScrollWidth, currentIndex } = this._state;
     const scrollAvailable = slidesScrollWidth - swiperWidth;
     const minScrollAvailableToDetectByMiddle = this._slides.first && this._slides.last ? this._slides.first.width / 2 + this._slides.last.width / 2 : 0;
     if (!this._limitToEdges || scrollAvailable > minScrollAvailableToDetectByMiddle) {
-      console.log("active index by middle");
       const offset = swiperWidth / 2;
       for (const { position, width, index } of this._slides.values()) {
         const leftLimit = offset - position - width;
@@ -562,9 +567,8 @@ var Swiper = class {
           return index;
         }
       }
-      return -1;
+      return currentIndex;
     } else {
-      console.log("active index by %");
       const positionRatio = translate / -scrollAvailable;
       const index = Math.round(positionRatio * this._slideCount);
       return Math.max(0, Math.min(this._slideCount - 1, index));
