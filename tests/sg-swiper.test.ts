@@ -20,8 +20,8 @@ describe("Swiper draggable with child", () => {
     linkedSwipers: [swiperObjectChild],
     navigation: { prev: [prev], next: [next] },
   });
-  swiperObjectParent._getDimensions();
-  swiperObjectParent._getDimensions();
+  swiperObjectParent._updateDimensions();
+  swiperObjectChild._updateDimensions();
   //spy on _handlePush, _handleRelease and _handleMove
   const pushListener = jest.spyOn(swiperObjectParent, "_handlePush");
 

@@ -9,7 +9,7 @@ import { SwiperArgs } from "./interfaces/SwiperArgs";
 
 export default class Swiper implements SwiperInterface {
   _state: SwiperState = {
-    currentIndex: 0,
+    currentIndex: undefined,
     currentPosition: 0,
     initialized: false,
     swiperWidth: 0,
@@ -32,7 +32,7 @@ export default class Swiper implements SwiperInterface {
 
   _indexChangeCallback: ((index: number) => void) | null = null;
   _resizeObserver: ResizeObserver | null = null;
-  _getDimensionsTimeout: NodeJS.Timeout | undefined;
+  _resizeTimeout: NodeJS.Timeout | undefined;
 
   _navigationElements: NavigationElements = {};
 
@@ -137,8 +137,6 @@ export default class Swiper implements SwiperInterface {
     // add the event listeners
     this._eventListeners = [
       [this._swiperElement, "mouseover", this._handleHover.bind(this), { passive: true }],
-      //[this._swiperElement, 'mouseleave', this._handleLeave.bind(this)],
-      //[window, "resize", this._getDimensions, { passive: true }],
     ];
 
     // add the draggable event listeners
@@ -164,12 +162,6 @@ export default class Swiper implements SwiperInterface {
   start = (index?: number) => {
     if (!this._state.initialized && this._swiperElement) {
 
-      // set the initial dimensions      
-      this._slides.forEach((slide, key) => {
-        this._slides.updateSlideDimensions(key);
-      })
-      this._state.swiperWidth = this._swiperElement.clientWidth;
-
       // add the event listeners
       this._eventListeners.forEach(([element, event, callback, options]) => {
         element?.addEventListener(event, callback, options);
@@ -180,7 +172,6 @@ export default class Swiper implements SwiperInterface {
         element.addEventListener("click", (e: Event) => {
           this._handleSlideClick(e, element, index);
         });
-        this._resizeObserver?.observe(element);
       });
 
       // add the navigation previous slide click event listeners
@@ -197,17 +188,16 @@ export default class Swiper implements SwiperInterface {
 
       // add the resize observer
       this._resizeObserver?.observe(this._swiperElement);
+      this._state.swiperWidth = this._swiperElement.clientWidth
 
       // set the swiper initialized
       this._state.initialized = true;
-
-      // set the starting index
       this._setIndex(index ?? 0);
 
       // set the auto slide interval if provided
       if (this._auto) {
         this._autoInterval = setInterval(() => {
-          const [, slide] = this._slides.getSlideByIndex(this._state.currentIndex) ?? [];
+          const [, slide] = this._slides.getSlideByIndex(this._state?.currentIndex) ?? [];
           if (slide?.loaded) {
             this._handleNextClick();
           }
@@ -230,21 +220,26 @@ export default class Swiper implements SwiperInterface {
   * Handles the click event for the previous button.
   */
   _handlePrevClick = () => {
-    const newIndex =
-      this._state.currentIndex - 1 < 0
-        ? this._slideCount - 1
-        : this._state.currentIndex - 1;
-    this._setIndex(newIndex);
+    if (this._state.currentIndex) {
+      const newIndex =
+        this._state.currentIndex - 1 < 0
+          ? this._slideCount - 1
+          : this._state.currentIndex - 1;
+      this._setIndex(newIndex);
+    }
+
   }
   /**
    * Handles the click event for navigating to the next item.
    */
   _handleNextClick = () => {
-    const newIndex =
-      this._state.currentIndex + 1 > this._slideCount - 1
-        ? 0
-        : this._state.currentIndex + 1;
-    this._setIndex(newIndex);
+    if (this._state.currentIndex) {
+      const newIndex =
+        this._state.currentIndex + 1 > this._slideCount - 1
+          ? 0
+          : this._state.currentIndex + 1;
+      this._setIndex(newIndex);
+    }
   }
 
   /**
@@ -262,42 +257,39 @@ export default class Swiper implements SwiperInterface {
   }
 
   _handleResize = (entries: ResizeObserverEntry[]) => {
-    clearTimeout(this._getDimensionsTimeout);
+    clearTimeout(this._resizeTimeout);
     for (const entry of entries) {
       if (entry.target === this._swiperElement) {
-
-        this._state.swiperWidth = entry.devicePixelContentBoxSize[0].inlineSize;
-      } else {
-        const { id } = entry.target
-        this._slides.updateSlideDimensions(id, {
-          width: entry.borderBoxSize[0].inlineSize
-        });
+        this._state.swiperWidth = entry.contentBoxSize[0].inlineSize;
       }
     }
-    this._getDimensionsTimeout = setTimeout(this._getDimensions, 75);
+    this._resizeTimeout = setTimeout(() => {
+      this._setIndex(this._getIndexByPosition(this._state.currentPosition), 200);
+    }, 80);
   }
 
   /**
    * Update dimensions and positions of slides
    */
-  _getDimensions = () => {
+  _updateDimensions = (): boolean => {
     const state = this._state;
     const swiper = this._swiperElement;
-    if (!state.initialized) return;
 
-    // update scroll width
-    const scrollWidth = this._slides.getSlidesScrollWidth();
-    this._state.slidesScrollWidth = scrollWidth
+    this._slides.updateSlideDimensions();
+    state.slidesScrollWidth = this._slides.getSlidesScrollWidth();
 
-    if (scrollWidth <= state.swiperWidth) {
+    // check translate ability
+    if (state.slidesScrollWidth <= state.swiperWidth) {
       // stop translating
       this._translate(0);
+      state.currentIndex = 0;
       state.noTranslate = true;
       swiper?.classList.add('no-translate');
+      return false;
     } else {
       state.noTranslate = false;
       swiper?.classList.remove('no-translate');
-      this._setIndex(this._getIndexByPosition(state.currentPosition));
+      return true
     }
   }
 
@@ -435,12 +427,7 @@ export default class Swiper implements SwiperInterface {
    */
   _triggerEvent = (ev: "release" | "push" | "move") => {
     if (ev === "release") {
-      this._setIndex(this._state.currentIndex);
-      /*
-      if(this._swipeSession.type === 'touch') {
-              this._handleLeave();
-      }
-      */
+      this._setIndex(this._state?.currentIndex);
     }
 
     if (ev === "move") {
@@ -452,7 +439,7 @@ export default class Swiper implements SwiperInterface {
       // calculate the new index based on slider position
       const newIndex = this._getIndexByPosition(newTranslate);
       // set the new index
-      if (newIndex > -1) this._setIndex(newIndex, false);
+      if (newIndex !== this._state.currentIndex) this._setIndex(newIndex, false);
     }
 
     if (ev === "push") {
@@ -499,11 +486,14 @@ export default class Swiper implements SwiperInterface {
    * @param {number} index - The index to set.
    * @param {boolean} translate - Optional flag to perform translation. Defaults to true.
    */
-  _setIndex = (index: number, translate: boolean = true): void => {
-    const { noTranslate, swiperWidth, slidesScrollWidth, currentIndex, currentPosition } = this._state;
+  _setIndex = (index: number | null | undefined, translate: boolean | number = true): void => {
+
+    const state = this._state;
+    if (!state.initialized || index === undefined || index === null) return;
+
     const [, activeSlide] = this._slides.getSlideByIndex(index) ?? [];
-    const [, lastActiveSlide] = this._slides.getSlideByIndex(currentIndex) ?? [];
-    
+    const [, lastActiveSlide] = this._slides.getSlideByIndex(state.currentIndex) ?? [];
+
     if (!activeSlide) {
       console.error('no active slide', index);
       return;
@@ -512,7 +502,7 @@ export default class Swiper implements SwiperInterface {
     //Slides need to be lazy loaded
     if (!this._slides.allSlidesLoaded && this._slideLoad) {
       // if no translate is set, that means slides are all visible, then load everything
-      if (noTranslate) {
+      if (state.noTranslate) {
         this._slides.forEach((slide) => {
           (this._slideLoad as any)(slide.element).then(() => {
             slide.loaded = true;
@@ -523,13 +513,13 @@ export default class Swiper implements SwiperInterface {
         //load active slide
         if (activeSlide) {
           // calc adjacent visible slides
-          const numOfAdjacentSlidesVisible = Math.max(0, Math.ceil(((swiperWidth / activeSlide.width) - 1)));
-
+          const numOfAdjacentSlidesVisible = Math.max(0, Math.ceil(((state.swiperWidth / activeSlide.width) - 1)));
+          // load active slide
           this._slideLoad(activeSlide.element)
             .then(() => {
               activeSlide.loaded = true;
               // load adjacent visible slides
-              if (!this._slides.allSlidesLoaded) {
+              if (!this._slides.allSlidesLoaded && numOfAdjacentSlidesVisible <= this._slideCount) {
                 for (let i = 1; i <= numOfAdjacentSlidesVisible; i++) {
                   const [, adjRightSlide] = this._slides.getSlideByIndex(index + i) ?? [];
                   const [, adjLeftSlide] = this._slides.getSlideByIndex(index - i) ?? [];
@@ -556,22 +546,23 @@ export default class Swiper implements SwiperInterface {
     }
 
     // if translate is needed then perform translation
-    if (translate && !noTranslate) {
-      let value = (swiperWidth - activeSlide.width) / 2 - activeSlide.position
+    if ((translate !== false && this._updateDimensions()) && !state.noTranslate) {
+
+      let value = (state.swiperWidth - activeSlide.width) / 2 - activeSlide.position
 
       //if stick to edges
       if (this._limitToEdges) {
-        const limit = swiperWidth - slidesScrollWidth;
+        const limit = state.swiperWidth - state.slidesScrollWidth;
 
         const [, firstSlide] = this._slides.getSlideByIndex(0) ?? [];
         const [, lastSlide] = this._slides.getSlideByIndex(this._slideCount - 1) ?? [];
 
         const stickToStart = firstSlide && (value > -1 * firstSlide.width / 2) ? true : false;
         const stickToEnd = lastSlide && (value < limit + (lastSlide.width / 2)) ? true : false;
-        
+
         this._clearPositionClassNames();
         if (stickToEnd && stickToStart) {
-          if (currentPosition < value) { // it goes towards the end
+          if (state.currentPosition < value) { // it goes towards the end
             value = limit;
             this._setLastClassNames();
           } else { // it goes towards the start
@@ -588,7 +579,7 @@ export default class Swiper implements SwiperInterface {
           value = Math.min(0, Math.max(limit, value));
         }
       }
-      this._translate(value, 500);
+      this._translate(value, typeof translate === "number" ? translate : 500);
     }
 
     // handle classnames
@@ -599,8 +590,10 @@ export default class Swiper implements SwiperInterface {
       this._setLastClassNames();
     }
 
-    if (index === currentIndex) return; // no change
-    this._state.currentIndex = index;
+    if (index === state.currentIndex) return; // no change
+
+    // update current index
+    state.currentIndex = index;
     // remove active classname to old active slide
     lastActiveSlide?.element.classList.remove("is-active");
     // update current index
@@ -631,7 +624,7 @@ export default class Swiper implements SwiperInterface {
   /**
    * Retrieves the active index based on the given position.
    */
-  _getIndexByPosition = (translate: number): number => {
+  _getIndexByPosition = (translate: number): number | undefined => {
     const { swiperWidth, slidesScrollWidth, currentIndex } = this._state;
     const scrollAvailable = slidesScrollWidth - swiperWidth;
     const minScrollAvailableToDetectByMiddle = this._slides.first && this._slides.last ? (this._slides.first.width / 2 + this._slides.last.width / 2) : 0;
@@ -644,7 +637,7 @@ export default class Swiper implements SwiperInterface {
           return index;
         }
       }
-      return currentIndex;
+      return undefined;
     } else { // detect the index by the % of the total scroll available
       const positionRatio = (translate / -scrollAvailable);
       const index = Math.round(positionRatio * this._slideCount);

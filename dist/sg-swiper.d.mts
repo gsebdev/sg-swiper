@@ -12,7 +12,7 @@ interface NavigationElements {
 interface SwiperInterface {
     start(index?: number): void;
     stop(): void;
-    index: number;
+    index: number | null | undefined;
     slideClick?: (index: number, element: HTMLElement) => void;
 }
 
@@ -23,9 +23,9 @@ declare class SlideMap extends Map<string, SwiperSlide> {
     /**
    * Retrieves the slide given the index position.
    */
-    getSlideByIndex: (index: number) => [string, SwiperSlide] | null;
+    getSlideByIndex: (index: number | undefined) => [string, SwiperSlide] | null;
     getSlidesScrollWidth: () => number;
-    updateSlideDimensions: (id: string, args?: {
+    updateSlideDimensions: (id?: string, args?: {
         width?: number;
         position?: number;
     }) => void;
@@ -54,7 +54,7 @@ interface SwipeSession {
 }
 
 interface SwiperState {
-    currentIndex: number;
+    currentIndex: number | undefined;
     currentPosition: number;
     initialized: boolean;
     swiperWidth: number;
@@ -80,7 +80,7 @@ declare class Swiper implements SwiperInterface {
     _swipeSession: SwipeSession;
     _indexChangeCallback: ((index: number) => void) | null;
     _resizeObserver: ResizeObserver | null;
-    _getDimensionsTimeout: NodeJS.Timeout | undefined;
+    _resizeTimeout: NodeJS.Timeout | undefined;
     _navigationElements: NavigationElements;
     _childrenSwipers: SwiperInterface[] | null;
     _slideClassName: string | null;
@@ -145,7 +145,7 @@ declare class Swiper implements SwiperInterface {
     /**
      * Update dimensions and positions of slides
      */
-    _getDimensions: () => void;
+    _updateDimensions: () => boolean;
     /**
      * Stops all event listeners and resets the state of the component.
      */
@@ -183,14 +183,14 @@ declare class Swiper implements SwiperInterface {
      * @param {number} index - The index to set.
      * @param {boolean} translate - Optional flag to perform translation. Defaults to true.
      */
-    _setIndex: (index: number, translate?: boolean) => void;
+    _setIndex: (index: number | null | undefined, translate?: boolean | number) => void;
     _clearPositionClassNames(): void;
     _setFirstClassNames(): void;
     _setLastClassNames(): void;
     /**
      * Retrieves the active index based on the given position.
      */
-    _getIndexByPosition: (translate: number) => number;
+    _getIndexByPosition: (translate: number) => number | undefined;
     get index(): number;
     set index(index: number);
     /**

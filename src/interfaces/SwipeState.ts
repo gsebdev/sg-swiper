@@ -1,5 +1,5 @@
 export interface SwiperState {
-  currentIndex: number;
+  currentIndex: number | undefined;
   currentPosition: number;
   initialized: boolean;
   swiperWidth: number;

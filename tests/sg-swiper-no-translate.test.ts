@@ -15,7 +15,7 @@ describe("Swiper with container bigger than wrapper", () => {
     ...args,
     navigation: { prev: [prev], next: [next] },
   });
-  swiperObject._getDimensions();
+  swiperObject._updateDimensions();
 
   it('should have a no-translate state', () => {
     expect(swiperObject._state.noTranslate).toBe(true);

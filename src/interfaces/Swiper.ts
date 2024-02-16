@@ -16,6 +16,6 @@ export interface NavigationElements {
 export interface SwiperInterface {
   start(index?: number): void;
   stop(): void;
-  index: number;
+  index: number | null | undefined;
   slideClick?: (index: number, element: HTMLElement) => void;
 }

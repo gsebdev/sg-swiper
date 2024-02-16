@@ -7,6 +7,8 @@ var SlideMap = class extends Map {
   * Retrieves the slide given the index position.
   */
   getSlideByIndex = (index) => {
+    if (index === void 0)
+      return null;
     for (const [id, slide] of this.entries()) {
       if (index === slide.index) {
         return [id, slide];
@@ -19,10 +21,17 @@ var SlideMap = class extends Map {
     return width && position ? width + position : 0;
   };
   updateSlideDimensions = (id, args) => {
-    const slide = this.get(id);
-    if (slide) {
-      slide.width = (args == null ? void 0 : args.width) ?? slide.element.offsetWidth;
-      slide.position = (args == null ? void 0 : args.position) ?? slide.element.offsetLeft;
+    if (id) {
+      const slide = this.get(id);
+      if (slide) {
+        slide.width = (args == null ? void 0 : args.width) ?? slide.element.offsetWidth;
+        slide.position = (args == null ? void 0 : args.position) ?? slide.element.offsetLeft;
+      }
+    } else {
+      for (const slide of this.values()) {
+        slide.width = slide.element.offsetWidth;
+        slide.position = slide.element.offsetLeft;
+      }
     }
   };
   set(id, slide) {
@@ -77,7 +86,7 @@ var SlideMap = class extends Map {
 // src/sg-swiper.ts
 var Swiper = class {
   _state = {
-    currentIndex: 0,
+    currentIndex: void 0,
     currentPosition: 0,
     initialized: false,
     swiperWidth: 0,
@@ -99,7 +108,7 @@ var Swiper = class {
   };
   _indexChangeCallback = null;
   _resizeObserver = null;
-  _getDimensionsTimeout;
+  _resizeTimeout;
   _navigationElements = {};
   _childrenSwipers = null;
   _slideClassName = null;
@@ -173,8 +182,6 @@ var Swiper = class {
     };
     this._eventListeners = [
       [this._swiperElement, "mouseover", this._handleHover.bind(this), { passive: true }]
-      //[this._swiperElement, 'mouseleave', this._handleLeave.bind(this)],
-      //[window, "resize", this._getDimensions, { passive: true }],
     ];
     if (this._draggable) {
       this._eventListeners.push(
@@ -196,19 +203,13 @@ var Swiper = class {
   start = (index) => {
     var _a;
     if (!this._state.initialized && this._swiperElement) {
-      this._slides.forEach((slide, key) => {
-        this._slides.updateSlideDimensions(key);
-      });
-      this._state.swiperWidth = this._swiperElement.clientWidth;
       this._eventListeners.forEach(([element, event, callback, options]) => {
         element == null ? void 0 : element.addEventListener(event, callback, options);
       });
       this._slides.forEach(({ element, index: index2 }) => {
-        var _a2;
         element.addEventListener("click", (e) => {
           this._handleSlideClick(e, element, index2);
         });
-        (_a2 = this._resizeObserver) == null ? void 0 : _a2.observe(element);
       });
       if (this._navigationElements.prev)
         this._navigationElements.prev.forEach((el) => {
@@ -219,11 +220,13 @@ var Swiper = class {
           el.addEventListener("click", this._handleNextClick.bind(this));
         });
       (_a = this._resizeObserver) == null ? void 0 : _a.observe(this._swiperElement);
+      this._state.swiperWidth = this._swiperElement.clientWidth;
       this._state.initialized = true;
       this._setIndex(index ?? 0);
       if (this._auto) {
         this._autoInterval = setInterval(() => {
-          const [, slide] = this._slides.getSlideByIndex(this._state.currentIndex) ?? [];
+          var _a2;
+          const [, slide] = this._slides.getSlideByIndex((_a2 = this._state) == null ? void 0 : _a2.currentIndex) ?? [];
           if (slide == null ? void 0 : slide.loaded) {
             this._handleNextClick();
           }
@@ -244,15 +247,19 @@ var Swiper = class {
   * Handles the click event for the previous button.
   */
   _handlePrevClick = () => {
-    const newIndex = this._state.currentIndex - 1 < 0 ? this._slideCount - 1 : this._state.currentIndex - 1;
-    this._setIndex(newIndex);
+    if (this._state.currentIndex) {
+      const newIndex = this._state.currentIndex - 1 < 0 ? this._slideCount - 1 : this._state.currentIndex - 1;
+      this._setIndex(newIndex);
+    }
   };
   /**
    * Handles the click event for navigating to the next item.
    */
   _handleNextClick = () => {
-    const newIndex = this._state.currentIndex + 1 > this._slideCount - 1 ? 0 : this._state.currentIndex + 1;
-    this._setIndex(newIndex);
+    if (this._state.currentIndex) {
+      const newIndex = this._state.currentIndex + 1 > this._slideCount - 1 ? 0 : this._state.currentIndex + 1;
+      this._setIndex(newIndex);
+    }
   };
   /**
    * Handle the click event on a slide element.
@@ -268,37 +275,34 @@ var Swiper = class {
     }
   };
   _handleResize = (entries) => {
-    clearTimeout(this._getDimensionsTimeout);
+    clearTimeout(this._resizeTimeout);
     for (const entry of entries) {
       if (entry.target === this._swiperElement) {
-        this._state.swiperWidth = entry.devicePixelContentBoxSize[0].inlineSize;
-      } else {
-        const { id } = entry.target;
-        this._slides.updateSlideDimensions(id, {
-          width: entry.borderBoxSize[0].inlineSize
-        });
+        this._state.swiperWidth = entry.contentBoxSize[0].inlineSize;
       }
     }
-    this._getDimensionsTimeout = setTimeout(this._getDimensions, 75);
+    this._resizeTimeout = setTimeout(() => {
+      this._setIndex(this._getIndexByPosition(this._state.currentPosition), 200);
+    }, 80);
   };
   /**
    * Update dimensions and positions of slides
    */
-  _getDimensions = () => {
+  _updateDimensions = () => {
     const state = this._state;
     const swiper = this._swiperElement;
-    if (!state.initialized)
-      return;
-    const scrollWidth = this._slides.getSlidesScrollWidth();
-    this._state.slidesScrollWidth = scrollWidth;
-    if (scrollWidth <= state.swiperWidth) {
+    this._slides.updateSlideDimensions();
+    state.slidesScrollWidth = this._slides.getSlidesScrollWidth();
+    if (state.slidesScrollWidth <= state.swiperWidth) {
       this._translate(0);
+      state.currentIndex = 0;
       state.noTranslate = true;
       swiper == null ? void 0 : swiper.classList.add("no-translate");
+      return false;
     } else {
       state.noTranslate = false;
       swiper == null ? void 0 : swiper.classList.remove("no-translate");
-      this._setIndex(this._getIndexByPosition(state.currentPosition));
+      return true;
     }
   };
   /**
@@ -405,8 +409,9 @@ var Swiper = class {
    * @param {("release" | "push" | "move")} ev - The type of event
    */
   _triggerEvent = (ev) => {
+    var _a;
     if (ev === "release") {
-      this._setIndex(this._state.currentIndex);
+      this._setIndex((_a = this._state) == null ? void 0 : _a.currentIndex);
     }
     if (ev === "move") {
       if (this._state.noTranslate)
@@ -414,7 +419,7 @@ var Swiper = class {
       const newTranslate = this._state.currentPosition + this._swipeSession.lastEventDeltaX;
       this._translate(newTranslate);
       const newIndex = this._getIndexByPosition(newTranslate);
-      if (newIndex > -1)
+      if (newIndex !== this._state.currentIndex)
         this._setIndex(newIndex, false);
     }
     if (ev === "push") {
@@ -447,15 +452,17 @@ var Swiper = class {
    * @param {boolean} translate - Optional flag to perform translation. Defaults to true.
    */
   _setIndex = (index, translate = true) => {
-    const { noTranslate, swiperWidth, slidesScrollWidth, currentIndex, currentPosition } = this._state;
+    const state = this._state;
+    if (!state.initialized || index === void 0 || index === null)
+      return;
     const [, activeSlide] = this._slides.getSlideByIndex(index) ?? [];
-    const [, lastActiveSlide] = this._slides.getSlideByIndex(currentIndex) ?? [];
+    const [, lastActiveSlide] = this._slides.getSlideByIndex(state.currentIndex) ?? [];
     if (!activeSlide) {
       console.error("no active slide", index);
       return;
     }
     if (!this._slides.allSlidesLoaded && this._slideLoad) {
-      if (noTranslate) {
+      if (state.noTranslate) {
         this._slides.forEach((slide) => {
           this._slideLoad(slide.element).then(() => {
             slide.loaded = true;
@@ -464,10 +471,10 @@ var Swiper = class {
         });
       } else {
         if (activeSlide) {
-          const numOfAdjacentSlidesVisible = Math.max(0, Math.ceil(swiperWidth / activeSlide.width - 1));
+          const numOfAdjacentSlidesVisible = Math.max(0, Math.ceil(state.swiperWidth / activeSlide.width - 1));
           this._slideLoad(activeSlide.element).then(() => {
             activeSlide.loaded = true;
-            if (!this._slides.allSlidesLoaded) {
+            if (!this._slides.allSlidesLoaded && numOfAdjacentSlidesVisible <= this._slideCount) {
               for (let i = 1; i <= numOfAdjacentSlidesVisible; i++) {
                 const [, adjRightSlide] = this._slides.getSlideByIndex(index + i) ?? [];
                 const [, adjLeftSlide] = this._slides.getSlideByIndex(index - i) ?? [];
@@ -489,17 +496,17 @@ var Swiper = class {
         }
       }
     }
-    if (translate && !noTranslate) {
-      let value = (swiperWidth - activeSlide.width) / 2 - activeSlide.position;
+    if (translate !== false && this._updateDimensions() && !state.noTranslate) {
+      let value = (state.swiperWidth - activeSlide.width) / 2 - activeSlide.position;
       if (this._limitToEdges) {
-        const limit = swiperWidth - slidesScrollWidth;
+        const limit = state.swiperWidth - state.slidesScrollWidth;
         const [, firstSlide] = this._slides.getSlideByIndex(0) ?? [];
         const [, lastSlide] = this._slides.getSlideByIndex(this._slideCount - 1) ?? [];
         const stickToStart = firstSlide && value > -1 * firstSlide.width / 2 ? true : false;
         const stickToEnd = lastSlide && value < limit + lastSlide.width / 2 ? true : false;
         this._clearPositionClassNames();
         if (stickToEnd && stickToStart) {
-          if (currentPosition < value) {
+          if (state.currentPosition < value) {
             value = limit;
             this._setLastClassNames();
           } else {
@@ -516,7 +523,7 @@ var Swiper = class {
           value = Math.min(0, Math.max(limit, value));
         }
       }
-      this._translate(value, 500);
+      this._translate(value, typeof translate === "number" ? translate : 500);
     }
     activeSlide.element.classList.add("is-active");
     if (index === 0) {
@@ -524,9 +531,9 @@ var Swiper = class {
     } else if (index === this._slideCount - 1) {
       this._setLastClassNames();
     }
-    if (index === currentIndex)
+    if (index === state.currentIndex)
       return;
-    this._state.currentIndex = index;
+    state.currentIndex = index;
     lastActiveSlide == null ? void 0 : lastActiveSlide.element.classList.remove("is-active");
     if (this._indexChangeCallback)
       this._indexChangeCallback(index);
@@ -567,7 +574,7 @@ var Swiper = class {
           return index;
         }
       }
-      return currentIndex;
+      return void 0;
     } else {
       const positionRatio = translate / -scrollAvailable;
       const index = Math.round(positionRatio * this._slideCount);

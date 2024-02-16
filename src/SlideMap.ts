@@ -7,7 +7,8 @@ export default class SlideMap extends Map<string, SwiperSlide> {
     /**
    * Retrieves the slide given the index position.
    */
-    getSlideByIndex = (index: number): [string, SwiperSlide] | null => {
+    getSlideByIndex = (index: number | undefined): [string, SwiperSlide] | null => {
+        if(index === undefined) return null;
         for (const [id, slide] of this.entries()) {
             if (index === slide.index) {
                 return [id, slide];
@@ -15,22 +16,30 @@ export default class SlideMap extends Map<string, SwiperSlide> {
         }
         return null;
     }
-    
+
     getSlidesScrollWidth = (): number => {
         const { width, position } = Array.from(this.values()).pop() ?? {};
         return width && position ? width + position : 0;
     }
 
-    updateSlideDimensions = (id: string, args?: {width?: number, position?: number}) => {
-        const slide = this.get(id)
-        if(slide) {
-            slide.width = args?.width ?? slide.element.offsetWidth;
-            slide.position = args?.position ?? slide.element.offsetLeft;
+    updateSlideDimensions = (id?: string, args?: { width?: number, position?: number }) => {
+        if (id) {
+            const slide = this.get(id)
+            if (slide) {
+                slide.width = args?.width ?? slide.element.offsetWidth;
+                slide.position = args?.position ?? slide.element.offsetLeft;
+            }
+        } else {
+            for (const slide of this.values()) {
+                slide.width = slide.element.offsetWidth;
+                slide.position = slide.element.offsetLeft;
+            }
         }
+
     }
 
     set(id: string, slide: SwiperSlide) {
-        if(this.entries.length === 0) {
+        if (this.entries.length === 0) {
             this._firstKey = id;
         }
         super.set(id, slide);
@@ -40,7 +49,7 @@ export default class SlideMap extends Map<string, SwiperSlide> {
 
     delete(key: string): boolean {
         const deleted = super.delete(key);
-        if(deleted) {
+        if (deleted) {
             Array.from(this.keys())
             this._lastKey = Array.from(this.keys()).pop();
             this._firstKey = Array.from(this.keys())[0];
@@ -67,14 +76,14 @@ export default class SlideMap extends Map<string, SwiperSlide> {
         }
     }
     get last(): SwiperSlide | undefined {
-        if(this._lastKey === undefined) {
+        if (this._lastKey === undefined) {
             return;
         }
         return this.get(this._lastKey);
     }
 
     get first(): SwiperSlide | undefined {
-        if(this._firstKey === undefined) {
+        if (this._firstKey === undefined) {
             return;
         }
         return this.get(this._firstKey);

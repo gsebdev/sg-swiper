@@ -20,7 +20,7 @@ describe("Swiper with lazyload", () => {
         slideClassName: "slide",
     });
 
-    swiperObject._getDimensions();
+    swiperObject._updateDimensions();
     const slides = Array.from(swiperObject._slides.values());
     
     /// tests start

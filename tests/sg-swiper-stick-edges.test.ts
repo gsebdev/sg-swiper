@@ -16,7 +16,7 @@ describe("Swiper with limit to edges for translate", () => {
     navigation: { prev: [prev], next: [next] },
     limitToEdges: true
   });
-  swiperObject._getDimensions();
+  swiperObject._updateDimensions();
   it('should have been initilized with good dimensions', () => {
     expect(swiperObject._state.swiperWidth).toEqual(500);
     expect(swiperObject._state.slidesScrollWidth).toEqual(900);
