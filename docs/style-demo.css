@@ -208,7 +208,7 @@ body {
 }
 @media screen and (max-width: 576px) {
   .swiper-slide .bottom-container p:first-child {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     margin: 5px 0;
   }
   .swiper-slide .bottom-container h3 {
@@ -219,13 +219,13 @@ body {
   }
   .swiper-slide .bottom-container p:last-child {
     margin: 5px 0;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
   }
   .swiper-slide {
-    flex: 0 0 80%;
+    flex: 0 0 75%;
   }
   .thumbs-swiper .swiper-slide {
-    flex: 0 0 30%;
+    flex: 0 0 25%;
   }
 }
 
