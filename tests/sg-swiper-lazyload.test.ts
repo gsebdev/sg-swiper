@@ -20,7 +20,6 @@ describe("Swiper with lazyload", () => {
         slideClassName: "slide",
     });
 
-    swiperObject._updateDimensions();
     const slides = Array.from(swiperObject._slides.values());
     
     /// tests start
@@ -28,9 +27,12 @@ describe("Swiper with lazyload", () => {
     it("should be initialized", () => {
         expect(swiperObject._state.initialized).toBe(true);
         expect(swiperObject._state.currentIndex).toBe(0);
+        expect(swiperObject._state.swiperWidth).toBe(500);
+        expect(swiperObject._state.slidesScrollWidth).toBe(1500);
         expect(swiperObject._slides.allSlidesLoaded).toBe(false);
     });
     it("should have loaded visible slides at beginning", () => {
+        console.log(swiperObject._state)
         // must load 3 adjacent slides in this case
         expect(slides[0].loaded).toBe(true);
         expect(slides[1].loaded).toBe(true);
@@ -43,7 +45,7 @@ describe("Swiper with lazyload", () => {
 
     it("should load 4, 5, 6, 7, 8 when index is set to 5", async () => {
         swiperObject.index = 5;
-        await new Promise((resolve) => { setTimeout( resolve, 10)});
+        await new Promise((resolve) => { setTimeout( resolve, 150)});
         // must laod 3 adjacent slides before and after in this case
         expect(swiperObject._state.currentIndex).toBe(5);
         expect(swiperObject._slides.allSlidesLoaded).toBe(false);

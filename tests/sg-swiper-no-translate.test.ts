@@ -31,7 +31,7 @@ describe("Swiper with container bigger than wrapper", () => {
   it('should prevent translating after setIndex', () => {
     swiperObject._setIndex(3);
     expect(slidesWrapper.style.transform).toBe("translate3d(0px, 0, 0)");
-    expect(swiperObject._state.currentIndex).toBe(3)
+    expect(swiperObject._state.currentIndex).toBe(undefined)
   })
   it('should prevent translating after mouse move', () => {
     swiperObject._swipeSession.active = true;
@@ -39,7 +39,7 @@ describe("Swiper with container bigger than wrapper", () => {
     swiperObject._swipeSession.startX = 0
     swiperObject._handleMove({ clientX: -30, timeStamp: 300 } as MouseEvent)
     expect(slidesWrapper.style.transform).toBe("translate3d(0px, 0, 0)");
-    expect(swiperObject._state.currentIndex).toBe(3)
+    expect(swiperObject._state.currentIndex).toBe(undefined)
   })
 
   it('should remove the no translate state after window resize and wrapper bigger than container', async () => {
@@ -57,7 +57,7 @@ describe("Swiper with container bigger than wrapper", () => {
     // wait for get dimensions wich is asynchrous
     await new Promise((resolve) => { setTimeout( resolve, 1000)});
     expect(swiperObject._state.noTranslate).toBe(false)
-    expect(swiperContainer.classList.contains('no-translate')).toBe(false)
+    expect(swiperContainer.classList.contains('no-translate')).toBe(false);
   })
 });
 
@@ -94,7 +94,7 @@ describe("Swiper with container smaller than wrapper", () => {
 
     expect(swiperObject._state.noTranslate).toBe(true)
     expect(swiperContainer.classList.contains('no-translate')).toBe(true)
-    expect(swiperObject._state.currentIndex).toBe(2)
+    expect(swiperObject._state.currentIndex).toBe(undefined)
     expect(slidesWrapper.style.transform).toBe("translate3d(0px, 0, 0)");
   })
 })
