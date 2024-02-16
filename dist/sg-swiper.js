@@ -272,7 +272,7 @@ var Swiper = class {
   * Handles the click event for the previous button.
   */
   _handlePrevClick = () => {
-    if (this._state.currentIndex) {
+    if (this._state.currentIndex !== void 0) {
       const newIndex = this._state.currentIndex - 1 < 0 ? this._slideCount - 1 : this._state.currentIndex - 1;
       this._setIndex(newIndex);
     }
@@ -281,7 +281,7 @@ var Swiper = class {
    * Handles the click event for navigating to the next item.
    */
   _handleNextClick = () => {
-    if (this._state.currentIndex) {
+    if (this._state.currentIndex !== void 0) {
       const newIndex = this._state.currentIndex + 1 > this._slideCount - 1 ? 0 : this._state.currentIndex + 1;
       this._setIndex(newIndex);
     }
@@ -320,7 +320,6 @@ var Swiper = class {
     state.slidesScrollWidth = this._slides.getSlidesScrollWidth();
     if (state.slidesScrollWidth <= state.swiperWidth) {
       this._translate(0);
-      state.currentIndex = 0;
       state.noTranslate = true;
       swiper == null ? void 0 : swiper.classList.add("no-translate");
       return false;
@@ -486,6 +485,7 @@ var Swiper = class {
       console.error("no active slide", index);
       return;
     }
+    this._updateDimensions();
     if (!this._slides.allSlidesLoaded && this._slideLoad) {
       if (state.noTranslate) {
         this._slides.forEach((slide) => {
@@ -521,7 +521,7 @@ var Swiper = class {
         }
       }
     }
-    if (translate !== false && this._updateDimensions() && !state.noTranslate) {
+    if (translate !== false && !state.noTranslate) {
       let value = (state.swiperWidth - activeSlide.width) / 2 - activeSlide.position;
       if (this._limitToEdges) {
         const limit = state.swiperWidth - state.slidesScrollWidth;
@@ -558,7 +558,7 @@ var Swiper = class {
     }
     if (index === state.currentIndex)
       return;
-    state.currentIndex = index;
+    state.currentIndex = state.noTranslate ? void 0 : index;
     lastActiveSlide == null ? void 0 : lastActiveSlide.element.classList.remove("is-active");
     if (this._indexChangeCallback)
       this._indexChangeCallback(index);
