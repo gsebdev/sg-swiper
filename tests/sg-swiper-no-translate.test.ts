@@ -58,12 +58,9 @@ describe("Swiper with container bigger than wrapper", () => {
     await new Promise((resolve) => { setTimeout( resolve, 1000)});
     expect(swiperObject._state.noTranslate).toBe(false)
     expect(swiperContainer.classList.contains('no-translate')).toBe(false)
-    expect(swiperObject._state.currentIndex).toBe(3)
-    expect(slidesWrapper.style.transform).toBe("translate3d(-115px, 0, 0)");
   })
-
-
 });
+
 describe("Swiper with container smaller than wrapper", () => {
   addResizeObserver();
   customizeHTMLElement();

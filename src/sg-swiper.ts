@@ -274,7 +274,7 @@ export default class Swiper implements SwiperInterface {
         });
       }
     }
-    this._getDimensionsTimeout = setTimeout(this._getDimensions, 100);
+    this._getDimensionsTimeout = setTimeout(this._getDimensions, 75);
   }
 
   /**
@@ -297,7 +297,7 @@ export default class Swiper implements SwiperInterface {
     } else {
       state.noTranslate = false;
       swiper?.classList.remove('no-translate');
-      this._setIndex(state.currentIndex);
+      this._setIndex(this._getIndexByPosition(state.currentPosition));
     }
   }
 
@@ -505,7 +505,7 @@ export default class Swiper implements SwiperInterface {
     const [, lastActiveSlide] = this._slides.getSlideByIndex(currentIndex) ?? [];
     
     if (!activeSlide) {
-      console.error('no active slide');
+      console.error('no active slide', index);
       return;
     }
 
@@ -568,7 +568,8 @@ export default class Swiper implements SwiperInterface {
 
         const stickToStart = firstSlide && (value > -1 * firstSlide.width / 2) ? true : false;
         const stickToEnd = lastSlide && (value < limit + (lastSlide.width / 2)) ? true : false;
-
+        
+        this._clearPositionClassNames();
         if (stickToEnd && stickToStart) {
           if (currentPosition < value) { // it goes towards the end
             value = limit;
@@ -614,7 +615,10 @@ export default class Swiper implements SwiperInterface {
       });
     }
   }
-
+  _clearPositionClassNames() {
+    this._swiperElement?.classList.remove("is-first");
+    this._swiperElement?.classList.remove("is-last");
+  }
   _setFirstClassNames() {
     this._swiperElement?.classList.remove("is-last");
     this._swiperElement?.classList.add("is-first");
@@ -628,7 +632,7 @@ export default class Swiper implements SwiperInterface {
    * Retrieves the active index based on the given position.
    */
   _getIndexByPosition = (translate: number): number => {
-    const { swiperWidth, slidesScrollWidth } = this._state;
+    const { swiperWidth, slidesScrollWidth, currentIndex } = this._state;
     const scrollAvailable = slidesScrollWidth - swiperWidth;
     const minScrollAvailableToDetectByMiddle = this._slides.first && this._slides.last ? (this._slides.first.width / 2 + this._slides.last.width / 2) : 0;
     if (!this._limitToEdges || scrollAvailable > minScrollAvailableToDetectByMiddle) { // detect the active index by the middle of the swiper element
@@ -640,7 +644,7 @@ export default class Swiper implements SwiperInterface {
           return index;
         }
       }
-      return -1;
+      return currentIndex;
     } else { // detect the index by the % of the total scroll available
       const positionRatio = (translate / -scrollAvailable);
       const index = Math.round(positionRatio * this._slideCount);
